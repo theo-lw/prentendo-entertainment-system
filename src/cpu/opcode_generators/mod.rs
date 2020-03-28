@@ -38,6 +38,7 @@ pub enum AddressingMode {
     Zero,
     ZeroX,
     ZeroY,
+    Implied,
     IndirectX,
     IndirectY,
 }

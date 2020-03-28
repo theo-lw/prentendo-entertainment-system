@@ -20,9 +20,8 @@ pub fn read<'a, T: Read + 'a>(
         };
         yield cycle;
         cycle.next();
-        let address: u8 = cpu.borrow().memory.get(cpu.borrow().registers.pc);
+        let address: u8 = cpu.borrow_mut().get_and_increment_pc();
         let address: u8 = address.wrapping_add(cpu.borrow().registers.y);
-        cpu.borrow_mut().registers.pc += 1;
         yield cycle;
         cycle.next();
         instruction.execute(cpu, u16::from_be_bytes([0, address]));
@@ -42,9 +41,8 @@ pub fn write<'a, T: Write + 'a>(
         };
         yield cycle;
         cycle.next();
-        let address: u8 = cpu.borrow().memory.get(cpu.borrow().registers.pc);
+        let address: u8 = cpu.borrow_mut().get_and_increment_pc();
         let address: u8 = address.wrapping_add(cpu.borrow().registers.y);
-        cpu.borrow_mut().registers.pc += 1;
         yield cycle;
         cycle.next();
         instruction.execute(cpu, u16::from_be_bytes([0, address]));
@@ -56,14 +54,14 @@ pub fn write<'a, T: Write + 'a>(
 mod tests {
     use super::*;
     use crate::cpu::instructions::adc::ADC;
-    use std::{ops::GeneratorState};
+    use std::ops::GeneratorState;
 
     #[test]
     fn test_read() {
         let mut cpu = CPU::mock();
         cpu.registers.y = 34;
         cpu.memory.set(cpu.registers.pc, 0x23);
-        cpu.memory.set(0x23+34, 19);
+        cpu.memory.set(0x23 + 34, 19);
         cpu.registers.a = 133;
         let cpu = Rc::new(RefCell::new(cpu));
         let instruction = ADC;

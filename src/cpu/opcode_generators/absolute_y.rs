@@ -6,14 +6,13 @@ use crate::{
         state::CPU,
     },
 };
-use std::{cell::RefCell, ops::Generator, rc::Rc, pin::Pin};
+use std::{cell::RefCell, ops::Generator, pin::Pin, rc::Rc};
 
 pub fn read<'a, T: Read + 'a>(
     cpu: &'a Rc<RefCell<CPU>>,
     instruction: T,
 ) -> Pin<Box<dyn Generator<Yield = CPUCycle<T>, Return = CPUCycle<T>> + 'a>> {
-    Box::pin(
-    move || {
+    Box::pin(move || {
         let mut cycle = CPUCycle {
             instruction,
             mode: AddressingMode::AbsoluteY,
@@ -21,13 +20,11 @@ pub fn read<'a, T: Read + 'a>(
         };
         yield cycle;
         cycle.next();
-        let low_byte: u8 = cpu.borrow().memory.get(cpu.borrow().registers.pc);
-        cpu.borrow_mut().registers.pc += 1;
+        let low_byte: u8 = cpu.borrow_mut().get_and_increment_pc();
         yield cycle;
         cycle.next();
-        let mut high_byte: u8 = cpu.borrow().memory.get(cpu.borrow().registers.pc);
+        let mut high_byte: u8 = cpu.borrow_mut().get_and_increment_pc();
         let (low_byte, overflow): (u8, bool) = low_byte.overflowing_add(cpu.borrow().registers.y);
-        cpu.borrow_mut().registers.pc += 1;
         yield cycle;
         cycle.next();
         if overflow {
@@ -44,8 +41,7 @@ pub fn write<'a, T: Write + 'a>(
     cpu: &'a Rc<RefCell<CPU>>,
     instruction: T,
 ) -> Pin<Box<dyn Generator<Yield = CPUCycle<T>, Return = CPUCycle<T>> + 'a>> {
-    Box::pin(
-    move || {
+    Box::pin(move || {
         let mut cycle = CPUCycle {
             instruction,
             mode: AddressingMode::AbsoluteY,
@@ -53,13 +49,11 @@ pub fn write<'a, T: Write + 'a>(
         };
         yield cycle;
         cycle.next();
-        let low_byte: u8 = cpu.borrow().memory.get(cpu.borrow().registers.pc);
-        cpu.borrow_mut().registers.pc += 1;
+        let low_byte: u8 = cpu.borrow_mut().get_and_increment_pc();
         yield cycle;
         cycle.next();
-        let mut high_byte: u8 = cpu.borrow().memory.get(cpu.borrow().registers.pc);
+        let mut high_byte: u8 = cpu.borrow_mut().get_and_increment_pc();
         let (low_byte, overflow): (u8, bool) = low_byte.overflowing_add(cpu.borrow().registers.y);
-        cpu.borrow_mut().registers.pc += 1;
         yield cycle;
         cycle.next();
         if overflow {
@@ -76,7 +70,7 @@ pub fn write<'a, T: Write + 'a>(
 mod tests {
     use super::*;
     use crate::cpu::instructions::adc::ADC;
-    use std::{ops::GeneratorState};
+    use std::ops::GeneratorState;
 
     #[test]
     fn test_read() {

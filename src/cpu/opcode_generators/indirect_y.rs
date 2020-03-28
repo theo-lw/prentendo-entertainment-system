@@ -20,8 +20,7 @@ pub fn read<'a, T: Read + 'a>(
         };
         yield cycle;
         cycle.next();
-        let pointer: u16 = u16::from_be_bytes([0, cpu.borrow().memory.get(cpu.borrow().registers.pc)]);
-        cpu.borrow_mut().registers.pc += 1;
+        let pointer: u16 = u16::from_be_bytes([0, cpu.borrow_mut().get_and_increment_pc()]);
         yield cycle;
         cycle.next();
         let low_byte: u8 = cpu.borrow().memory.get(pointer);
@@ -53,8 +52,7 @@ pub fn write<'a, T: Write + 'a>(
         };
         yield cycle;
         cycle.next();
-        let pointer: u16 = u16::from_be_bytes([0, cpu.borrow().memory.get(cpu.borrow().registers.pc)]);
-        cpu.borrow_mut().registers.pc += 1;
+        let pointer: u16 = u16::from_be_bytes([0, cpu.borrow_mut().get_and_increment_pc()]);
         yield cycle;
         cycle.next();
         let low_byte: u8 = cpu.borrow().memory.get(pointer);
@@ -86,8 +84,7 @@ pub fn modify<'a, T: Modify + 'a>(
         };
         yield cycle;
         cycle.next();
-        let pointer: u16 = u16::from_be_bytes([0, cpu.borrow().memory.get(cpu.borrow().registers.pc)]);
-        cpu.borrow_mut().registers.pc += 1;
+        let pointer: u16 = u16::from_be_bytes([0, cpu.borrow_mut().get_and_increment_pc()]);
         yield cycle;
         cycle.next();
         let low_byte: u8 = cpu.borrow().memory.get(pointer);
@@ -118,7 +115,7 @@ pub fn modify<'a, T: Modify + 'a>(
 mod tests {
     use super::*;
     use crate::cpu::instructions::adc::ADC;
-    use std::{ops::GeneratorState};
+    use std::ops::GeneratorState;
 
     #[test]
     fn test_read() {

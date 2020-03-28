@@ -20,13 +20,11 @@ pub fn read<'a, T: Read + 'a>(
         };
         yield cycle;
         cycle.next();
-        let low_byte: u8 = cpu.borrow().memory.get(cpu.borrow().registers.pc);
-        cpu.borrow_mut().registers.pc += 1;
+        let low_byte: u8 = cpu.borrow_mut().get_and_increment_pc();
         yield cycle;
         cycle.next();
-        let mut high_byte: u8 = cpu.borrow().memory.get(cpu.borrow().registers.pc);
+        let mut high_byte: u8 = cpu.borrow_mut().get_and_increment_pc();
         let (low_byte, overflow): (u8, bool) = low_byte.overflowing_add(cpu.borrow().registers.x);
-        cpu.borrow_mut().registers.pc += 1;
         yield cycle;
         cycle.next();
         if overflow {
@@ -51,13 +49,11 @@ pub fn write<'a, T: Write + 'a>(
         };
         yield cycle;
         cycle.next();
-        let low_byte: u8 = cpu.borrow().memory.get(cpu.borrow().registers.pc);
-        cpu.borrow_mut().registers.pc += 1;
+        let low_byte: u8 = cpu.borrow_mut().get_and_increment_pc();
         yield cycle;
         cycle.next();
-        let mut high_byte: u8 = cpu.borrow().memory.get(cpu.borrow().registers.pc);
+        let mut high_byte: u8 = cpu.borrow_mut().get_and_increment_pc();
         let (low_byte, overflow): (u8, bool) = low_byte.overflowing_add(cpu.borrow().registers.x);
-        cpu.borrow_mut().registers.pc += 1;
         yield cycle;
         cycle.next();
         if overflow {
@@ -82,13 +78,11 @@ pub fn modify<'a, T: Modify + 'a>(
         };
         yield cycle;
         cycle.next();
-        let low_byte: u8 = cpu.borrow().memory.get(cpu.borrow().registers.pc);
-        cpu.borrow_mut().registers.pc += 1;
+        let low_byte: u8 = cpu.borrow_mut().get_and_increment_pc();
         yield cycle;
         cycle.next();
-        let mut high_byte: u8 = cpu.borrow().memory.get(cpu.borrow().registers.pc);
+        let mut high_byte: u8 = cpu.borrow_mut().get_and_increment_pc();
         let (low_byte, overflow): (u8, bool) = low_byte.overflowing_add(cpu.borrow().registers.x);
-        cpu.borrow_mut().registers.pc += 1;
         yield cycle;
         cycle.next();
         if overflow {
@@ -111,8 +105,8 @@ pub fn modify<'a, T: Modify + 'a>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::cpu::instructions::adc::ADC;
-    use std::{ops::GeneratorState};
+    use crate::cpu::instructions::{adc::ADC, asl::ASL};
+    use std::ops::GeneratorState;
 
     #[test]
     fn test_read() {
@@ -145,5 +139,49 @@ mod tests {
         let state = opcode.as_mut().resume(());
         assert_eq!(state, GeneratorState::Complete(cycle));
         assert_eq!(cpu.borrow().registers.a, 163);
+    }
+
+    #[test]
+    fn test_modify() {
+        let mut cpu = CPU::mock();
+        cpu.registers.x = 3;
+        cpu.memory.set(cpu.registers.pc, 0x23);
+        cpu.memory.set(cpu.registers.pc + 1, 0x44);
+        cpu.memory.set(0x4426, 0b0100_0101);
+        let cpu = Rc::new(RefCell::new(cpu));
+        let instruction = ASL;
+        let mut opcode = modify(&cpu, instruction);
+        let mut cycle = CPUCycle {
+            instruction,
+            mode: AddressingMode::AbsoluteX,
+            cycle: 0,
+        };
+        let state = opcode.as_mut().resume(());
+        assert_eq!(state, GeneratorState::Yielded(cycle));
+        assert_eq!(cpu.borrow().memory.get(0x4426), 0b0100_0101);
+        cycle.next();
+        let state = opcode.as_mut().resume(());
+        assert_eq!(state, GeneratorState::Yielded(cycle));
+        assert_eq!(cpu.borrow().memory.get(0x4426), 0b0100_0101);
+        cycle.next();
+        let state = opcode.as_mut().resume(());
+        assert_eq!(state, GeneratorState::Yielded(cycle));
+        assert_eq!(cpu.borrow().memory.get(0x4426), 0b0100_0101);
+        cycle.next();
+        let state = opcode.as_mut().resume(());
+        assert_eq!(state, GeneratorState::Yielded(cycle));
+        assert_eq!(cpu.borrow().memory.get(0x4426), 0b0100_0101);
+        cycle.next();
+        let state = opcode.as_mut().resume(());
+        assert_eq!(state, GeneratorState::Yielded(cycle));
+        assert_eq!(cpu.borrow().memory.get(0x4426), 0b0100_0101);
+        cycle.next();
+        let state = opcode.as_mut().resume(());
+        assert_eq!(state, GeneratorState::Yielded(cycle));
+        assert_eq!(cpu.borrow().memory.get(0x4426), 0b0100_0101);
+        cycle.next();
+        let state = opcode.as_mut().resume(());
+        assert_eq!(state, GeneratorState::Complete(cycle));
+        assert_eq!(cpu.borrow().memory.get(0x4426), 0b1000_1010);
     }
 }

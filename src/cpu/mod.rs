@@ -16,7 +16,9 @@ pub fn cycle<'a, T: Instruction>(cpu: &'a Rc<RefCell<CPU>>) -> impl Generator + 
     move || loop {
         let opcode: u8 = cpu.borrow().memory.get(cpu.borrow().registers.pc);
         cpu.borrow_mut().registers.pc += 1;
-        let mut generator = if opcode == 0 { absolute_x::read(cpu, ADC) } else {
+        let mut generator = if opcode == 0 {
+            absolute_x::read(cpu, ADC)
+        } else {
             absolute::read(cpu, ADC)
         };
         'opcode: loop {

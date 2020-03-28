@@ -1,4 +1,4 @@
-use super::{Instruction, Implied, Modify};
+use super::{Implied, Instruction, Modify};
 use crate::address::AddressMap;
 use crate::cpu::state::{Flag, CPU};
 use std::{cell::RefCell, rc::Rc};
