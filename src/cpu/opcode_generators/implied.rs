@@ -1,7 +1,8 @@
 use crate::{
-    address::AddressMap,
     cpu::{
-        instructions::{Implied, Instruction, others::{RTI, RTS, PHA, PHP, PLA, PLP}},
+        instructions::{
+            InstructionName, Implied, PullStack, PushStack,
+        },
         opcode_generators::{AddressingMode, CPUCycle},
         state::CPU,
     },
@@ -11,10 +12,10 @@ use std::{cell::RefCell, ops::Generator, pin::Pin, rc::Rc};
 pub fn implied<'a, T: Implied + 'a>(
     cpu: &'a Rc<RefCell<CPU>>,
     instruction: T,
-) -> Pin<Box<dyn Generator<Yield = CPUCycle<T>, Return = CPUCycle<T>> + 'a>> {
+) -> Pin<Box<dyn Generator<Yield = CPUCycle, Return = CPUCycle> + 'a>> {
     Box::pin(move || {
         let mut cycle = CPUCycle {
-            instruction,
+            instruction: instruction.name(),
             mode: AddressingMode::Implied,
             cycle: 0,
         };
@@ -27,15 +28,16 @@ pub fn implied<'a, T: Implied + 'a>(
 
 pub fn rti<'a>(
     cpu: &'a Rc<RefCell<CPU>>,
-) -> Pin<Box<dyn Generator<Yield = CPUCycle<RTI>, Return = CPUCycle<RTI>> + 'a>> {
+) -> Pin<Box<dyn Generator<Yield = CPUCycle, Return = CPUCycle> + 'a>> {
     Box::pin(move || {
         let mut cycle = CPUCycle {
-            instruction: RTI,
+            instruction: InstructionName::RTI,
             mode: AddressingMode::Implied,
             cycle: 0,
         };
         yield cycle;
         cycle.next();
+        // throw away next instruction byte
         yield cycle;
         cycle.next();
         cpu.borrow_mut().pop_stack();
@@ -45,13 +47,40 @@ pub fn rti<'a>(
         cpu.borrow_mut().pop_stack();
         yield cycle;
         cycle.next();
-        let [high, _]: [u8; 2] = cpu.borrow().registers.pc.to_be_bytes();
-        cpu.borrow_mut().registers.pc = u16::from_be_bytes([high, cpu.borrow().top_stack()]);
+        cpu.borrow_mut().registers.set_pcl(cpu.borrow().top_stack());
         cpu.borrow_mut().pop_stack();
         yield cycle;
         cycle.next();
-        let [_, low]: [u8; 2] = cpu.borrow().registers.pc.to_be_bytes();
-        cpu.borrow_mut().registers.pc = u16::from_be_bytes([cpu.borrow().top_stack(), low]);
+        cpu.borrow_mut().registers.set_pch(cpu.borrow().top_stack());
+        return cycle;
+    })
+}
+
+pub fn rts<'a>(
+    cpu: &'a Rc<RefCell<CPU>>,
+) -> Pin<Box<dyn Generator<Yield = CPUCycle, Return = CPUCycle> + 'a>> {
+    Box::pin(move || {
+        let mut cycle = CPUCycle {
+            instruction: InstructionName::RTS,
+            mode: AddressingMode::Implied,
+            cycle: 0,
+        };
+        yield cycle;
+        cycle.next();
+        // throw away next instruction byte
+        yield cycle;
+        cycle.next();
+        cpu.borrow_mut().pop_stack();
+        yield cycle;
+        cycle.next();
+        cpu.borrow_mut().registers.set_pcl(cpu.borrow().top_stack());
+        cpu.borrow_mut().pop_stack();
+        yield cycle;
+        cycle.next();
+        cpu.borrow_mut().registers.set_pch(cpu.borrow().top_stack());
+        yield cycle;
+        cycle.next();
+        cpu.borrow_mut().registers.increment_pc();
         return cycle;
     })
 }

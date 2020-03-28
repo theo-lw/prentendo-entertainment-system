@@ -9,22 +9,16 @@ pub mod zero;
 pub mod zero_x;
 pub mod zero_y;
 
-use crate::cpu::instructions::Instruction;
+use crate::cpu::instructions::InstructionName;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
-pub struct CPUCycle<T>
-where
-    T: Instruction,
-{
-    pub instruction: T,
+pub struct CPUCycle {
+    pub instruction: InstructionName,
     pub mode: AddressingMode,
     pub cycle: u8,
 }
 
-impl<T> CPUCycle<T>
-where
-    T: Instruction,
-{
+impl CPUCycle {
     pub fn next(&mut self) {
         self.cycle += 1;
     }

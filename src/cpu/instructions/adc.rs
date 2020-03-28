@@ -1,4 +1,4 @@
-use super::{Instruction, Read};
+use super::{Instruction, InstructionName, Read};
 use crate::address::AddressMap;
 use crate::cpu::state::{Flag, CPU};
 use std::{cell::RefCell, rc::Rc};
@@ -6,7 +6,11 @@ use std::{cell::RefCell, rc::Rc};
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct ADC;
 
-impl Instruction for ADC {}
+impl Instruction for ADC {
+    fn name(&self) -> InstructionName {
+        InstructionName::ADC
+    }
+}
 
 impl Read for ADC {
     fn execute(&self, cpu: &Rc<RefCell<CPU>>, addr: u16) {

@@ -23,7 +23,8 @@ impl CPU {
 
     /// Retrieves the top of the stack
     pub fn top_stack(&self) -> u8 {
-        self.memory.get(u16::from_be_bytes([0x01, self.registers.s]))
+        self.memory
+            .get(u16::from_be_bytes([0x01, self.registers.s]))
     }
 
     /// Removes the top of the stack
@@ -34,7 +35,7 @@ impl CPU {
     /// Gets byte at PC and increments PC
     pub fn get_and_increment_pc(&mut self) -> u8 {
         let result: u8 = self.memory.get(self.registers.pc);
-        self.registers.pc = self.registers.pc.wrapping_add(1);
+        self.registers.increment_pc();
         return result;
     }
 }
@@ -95,6 +96,25 @@ pub struct Registers {
     pub pc: u16,
     pub s: u8,
     pub p: u8,
+}
+
+impl Registers {
+    /// Sets the high byte of the PC
+    pub fn set_pch(&mut self, high: u8) {
+        let [_, low]: [u8; 2] = self.pc.to_be_bytes();
+        self.pc = u16::from_be_bytes([high, low]);
+    }
+
+    /// Sets the lower byte of the PC
+    pub fn set_pcl(&mut self, low: u8) {
+        let [high, _]: [u8; 2] = self.pc.to_be_bytes();
+        self.pc = u16::from_be_bytes([high, low]);
+    }
+
+    /// Increments the PC
+    pub fn increment_pc(&mut self) {
+        self.pc = self.pc.wrapping_add(1);
+    }
 }
 
 impl Default for Registers {

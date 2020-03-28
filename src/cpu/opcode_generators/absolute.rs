@@ -1,7 +1,7 @@
 use crate::{
     address::AddressMap,
     cpu::{
-        instructions::{Modify, Read, Write},
+        instructions::{Instruction, Modify, Read, Write},
         opcode_generators::{AddressingMode, CPUCycle},
         state::CPU,
     },
@@ -11,10 +11,10 @@ use std::{cell::RefCell, ops::Generator, pin::Pin, rc::Rc};
 pub fn read<'a, T: Read + 'a>(
     cpu: &'a Rc<RefCell<CPU>>,
     instruction: T,
-) -> Pin<Box<dyn Generator<Yield = CPUCycle<T>, Return = CPUCycle<T>> + 'a>> {
+) -> Pin<Box<dyn Generator<Yield = CPUCycle, Return = CPUCycle> + 'a>> {
     Box::pin(move || {
         let mut cycle = CPUCycle {
-            instruction,
+            instruction: instruction.name(),
             mode: AddressingMode::Absolute,
             cycle: 0,
         };
@@ -34,10 +34,10 @@ pub fn read<'a, T: Read + 'a>(
 pub fn write<'a, T: Write + 'a>(
     cpu: &'a Rc<RefCell<CPU>>,
     instruction: T,
-) -> Pin<Box<dyn Generator<Yield = CPUCycle<T>, Return = CPUCycle<T>> + 'a>> {
+) -> Pin<Box<dyn Generator<Yield = CPUCycle, Return = CPUCycle> + 'a>> {
     Box::pin(move || {
         let mut cycle = CPUCycle {
-            instruction,
+            instruction: instruction.name(),
             mode: AddressingMode::Absolute,
             cycle: 0,
         };
@@ -57,10 +57,10 @@ pub fn write<'a, T: Write + 'a>(
 pub fn modify<'a, T: Modify + 'a>(
     cpu: &'a Rc<RefCell<CPU>>,
     instruction: T,
-) -> Pin<Box<dyn Generator<Yield = CPUCycle<T>, Return = CPUCycle<T>> + 'a>> {
+) -> Pin<Box<dyn Generator<Yield = CPUCycle, Return = CPUCycle> + 'a>> {
     Box::pin(move || {
         let mut cycle = CPUCycle {
-            instruction,
+            instruction: instruction.name(),
             mode: AddressingMode::Absolute,
             cycle: 0,
         };
@@ -102,7 +102,7 @@ mod tests {
         let instruction = ADC;
         let mut opcode = read(&cpu, instruction);
         let mut cycle = CPUCycle {
-            instruction,
+            instruction: instruction.name(),
             mode: AddressingMode::Absolute,
             cycle: 0,
         };
@@ -134,7 +134,7 @@ mod tests {
         let instruction = ASL;
         let mut opcode = modify(&cpu, instruction);
         let mut cycle = CPUCycle {
-            instruction,
+            instruction: instruction.name(),
             mode: AddressingMode::Absolute,
             cycle: 0,
         };

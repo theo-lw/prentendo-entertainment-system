@@ -1,4 +1,4 @@
-use super::{Implied, Instruction, Modify};
+use super::{InstructionName, Implied, Instruction, Modify};
 use crate::address::AddressMap;
 use crate::cpu::state::{Flag, CPU};
 use std::{cell::RefCell, rc::Rc};
@@ -24,7 +24,11 @@ impl ASL {
     }
 }
 
-impl Instruction for ASL {}
+impl Instruction for ASL {
+    fn name(&self) -> InstructionName {
+        InstructionName::ASL
+    }
+}
 
 impl Modify for ASL {
     fn execute(&self, cpu: &Rc<RefCell<CPU>>, addr: u16, old_val: u8) {
