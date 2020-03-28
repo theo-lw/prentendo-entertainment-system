@@ -5,13 +5,13 @@ mod address;
 mod cpu;
 
 trait Opcode {
-    fn generate() -> Pin<Box<dyn Generator<Yield=String, Return=()>>>;
+    fn generate() -> Pin<Box<dyn Generator<Yield = String, Return = ()>>>;
 }
 
 struct AbsoluteX;
 
 impl Opcode for AbsoluteX {
-    fn generate() -> Pin<Box<dyn Generator<Yield=String, Return=()>>> {
+    fn generate() -> Pin<Box<dyn Generator<Yield = String, Return = ()>>> {
         Box::pin(move || {
             yield String::from("hello world!");
             return;

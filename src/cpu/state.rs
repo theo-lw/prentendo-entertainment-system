@@ -10,7 +10,7 @@ pub struct CPU {
 
 impl CPU {
     #[cfg(test)]
-    fn mock() -> Self {
+    pub fn mock() -> Self {
         Default::default()
     }
 }
@@ -31,7 +31,7 @@ impl Default for Memory {
             ppu_registers: Rc::new(RefCell::new([0; 0x8])),
             apu_and_io: Rc::new(RefCell::new([0; 0x18])),
             apu_and_io_disabled: [0; 0x8],
-            cartridge_space: [0; 0xBFE0]
+            cartridge_space: [0; 0xBFE0],
         }
     }
 }
