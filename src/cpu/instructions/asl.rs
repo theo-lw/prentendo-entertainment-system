@@ -1,6 +1,6 @@
 use super::{InstructionName, Implied, Instruction, Modify};
 use crate::address::AddressMap;
-use crate::cpu::state::{Flag, CPU};
+use crate::cpu::state::{registers::Flag, CPU};
 use std::{cell::RefCell, rc::Rc};
 
 #[derive(Debug, Copy, Clone, PartialEq)]

@@ -3,6 +3,7 @@ pub mod absolute_x;
 pub mod absolute_y;
 pub mod immediate;
 pub mod implied;
+pub mod indirect;
 pub mod indirect_x;
 pub mod indirect_y;
 pub mod zero;
@@ -32,7 +33,9 @@ pub enum AddressingMode {
     Zero,
     ZeroX,
     ZeroY,
+    Immediate,
     Implied,
+    Indirect,
     IndirectX,
     IndirectY,
 }

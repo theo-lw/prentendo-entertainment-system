@@ -2,6 +2,7 @@ use super::{Instruction, InstructionName, PullStack};
 use crate::cpu::state::CPU;
 use std::{cell::RefCell, rc::Rc};
 
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub struct PLP;
 
 impl Instruction for PLP {

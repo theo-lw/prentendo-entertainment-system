@@ -1,7 +1,7 @@
 use crate::{
     address::AddressMap,
     cpu::{
-        instructions::{Instruction, Modify, Read, Write},
+        instructions::{Modify, Read, Write},
         opcode_generators::{AddressingMode, CPUCycle},
         state::CPU,
     },
@@ -21,6 +21,8 @@ pub fn read<'a, T: Read + 'a>(
         yield cycle;
         cycle.next();
         let address: u8 = cpu.borrow_mut().get_and_increment_pc();
+        yield cycle;
+        cycle.next();
         let address: u8 = address.wrapping_add(cpu.borrow().registers.x);
         yield cycle;
         cycle.next();
@@ -42,6 +44,8 @@ pub fn write<'a, T: Write + 'a>(
         yield cycle;
         cycle.next();
         let address: u8 = cpu.borrow_mut().get_and_increment_pc();
+        yield cycle;
+        cycle.next();
         let address: u8 = address.wrapping_add(cpu.borrow().registers.x);
         yield cycle;
         cycle.next();
@@ -63,6 +67,8 @@ pub fn modify<'a, T: Modify + 'a>(
         yield cycle;
         cycle.next();
         let address: u8 = cpu.borrow_mut().get_and_increment_pc();
+        yield cycle; 
+        cycle.next();
         let address: u8 = address.wrapping_add(cpu.borrow().registers.x);
         yield cycle;
         cycle.next();
@@ -81,7 +87,7 @@ pub fn modify<'a, T: Modify + 'a>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::cpu::instructions::adc::ADC;
+    use crate::cpu::instructions::{Instruction, adc::ADC, asl::ASL, sta::STA};
     use std::ops::GeneratorState;
 
     #[test]
@@ -99,16 +105,65 @@ mod tests {
             mode: AddressingMode::ZeroX,
             cycle: 0,
         };
-        let state = opcode.as_mut().resume(());
-        assert_eq!(state, GeneratorState::Yielded(cycle));
-        assert_eq!(cpu.borrow().registers.a, 133);
-        cycle.next();
-        let state = opcode.as_mut().resume(());
-        assert_eq!(state, GeneratorState::Yielded(cycle));
-        assert_eq!(cpu.borrow().registers.a, 133);
-        cycle.next();
+        for _ in 0..3 {
+            let state = opcode.as_mut().resume(());
+            assert_eq!(state, GeneratorState::Yielded(cycle));
+            assert_eq!(cpu.borrow().registers.a, 133);
+            cycle.next();
+        }
         let state = opcode.as_mut().resume(());
         assert_eq!(state, GeneratorState::Complete(cycle));
         assert_eq!(cpu.borrow().registers.a, 152);
+    }
+
+    #[test]
+    fn test_write() {
+        let mut cpu = CPU::mock();
+        cpu.registers.a = 43;
+        cpu.registers.x = 5;
+        cpu.memory.set(cpu.registers.pc, 0x10);
+        cpu.memory.set(0x15, 0);
+        let cpu = Rc::new(RefCell::new(cpu));
+        let instruction = STA;
+        let mut opcode = write(&cpu, instruction);
+        let mut cycle = CPUCycle {
+            instruction: instruction.name(),
+            mode: AddressingMode::ZeroX,
+            cycle: 0,
+        };
+        for _ in 0..3 {
+            let state = opcode.as_mut().resume(());
+            assert_eq!(state, GeneratorState::Yielded(cycle));
+            assert_eq!(cpu.borrow().memory.get(0x15), 0);
+            cycle.next();
+        }
+        let state = opcode.as_mut().resume(());
+        assert_eq!(state, GeneratorState::Complete(cycle));
+        assert_eq!(cpu.borrow().memory.get(0x15), 43);
+    }
+
+    #[test]
+    fn test_modify() {
+        let mut cpu = CPU::mock();
+        cpu.registers.x = 1;
+        cpu.memory.set(cpu.registers.pc, 0x29);
+        cpu.memory.set(0x2A, 0b0100_0101);
+        let cpu = Rc::new(RefCell::new(cpu));
+        let instruction = ASL;
+        let mut opcode = modify(&cpu, instruction);
+        let mut cycle = CPUCycle {
+            instruction: instruction.name(),
+            mode: AddressingMode::ZeroX,
+            cycle: 0,
+        };
+        for _ in 0..5 {
+            let state = opcode.as_mut().resume(());
+            assert_eq!(state, GeneratorState::Yielded(cycle));
+            assert_eq!(cpu.borrow().memory.get(0x2A), 0b0100_0101);
+            cycle.next();
+        }
+        let state = opcode.as_mut().resume(());
+        assert_eq!(state, GeneratorState::Complete(cycle));
+        assert_eq!(cpu.borrow().memory.get(0x2A), 0b1000_1010);
     }
 }

@@ -4,6 +4,7 @@ pub mod pha;
 pub mod php;
 pub mod pla;
 pub mod plp;
+pub mod sta;
 
 use crate::cpu::state::CPU;
 use std::{cell::RefCell, fmt::Debug, rc::Rc};
@@ -47,5 +48,7 @@ pub enum InstructionName {
     PHP,
     PLA,
     PLP,
-    JSR
+    JSR,
+    JMP,
+    STA,
 }
