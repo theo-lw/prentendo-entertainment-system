@@ -26,4 +26,35 @@ impl PullStack for PLA {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_pla() {
+        let mut cpu = CPU::mock();
+        cpu.registers.a = 0;
+        let cpu = Rc::new(RefCell::new(cpu));
+        PLA.set(&cpu, 0b0101_1110);
+        assert_eq!(cpu.borrow().registers.a, 0b0101_1110);
+    }
+
+    #[test]
+    fn test_pla_z() {
+        let mut cpu = CPU::mock();
+        cpu.registers.clear_flag(Flag::Z);
+        let cpu = Rc::new(RefCell::new(cpu));
+        PLA.set(&cpu, 12);
+        assert_eq!(cpu.borrow().registers.get_flag(Flag::Z), 0);
+        PLA.set(&cpu, 0);
+        assert_eq!(cpu.borrow().registers.get_flag(Flag::Z), 1);
+    }
+
+    #[test]
+    fn test_pla_n() {
+        let mut cpu = CPU::mock();
+        cpu.registers.clear_flag(Flag::N);
+        let cpu = Rc::new(RefCell::new(cpu));
+        PLA.set(&cpu, 0);
+        assert_eq!(cpu.borrow().registers.get_flag(Flag::N), 0);
+        PLA.set(&cpu, 0b1100_0010);
+        assert_eq!(cpu.borrow().registers.get_flag(Flag::N), 1);
+    }
 }

@@ -29,7 +29,7 @@ impl Read for ADC {
             cpu.borrow_mut().registers.set_flag(Flag::C);
         }
         // if result's sign is opposite to a and byte has the same sign as a
-        if (result ^ a) & !(byte ^ a) & 0b1000_000 != 0 {
+        if (result ^ a) & !(byte ^ a) & 0b1000_0000 != 0 {
             cpu.borrow_mut().registers.set_flag(Flag::V);
         }
         cpu.borrow_mut().registers.a = result;
