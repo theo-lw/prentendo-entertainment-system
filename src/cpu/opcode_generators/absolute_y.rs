@@ -7,6 +7,7 @@ use crate::{
 };
 use std::{cell::RefCell, ops::Generator, pin::Pin, rc::Rc};
 
+/// Creates the opcode for 'Read' instructions with absolute Y addressing
 pub fn read<'a, T: Read + 'a>(
     cpu: &'a Rc<RefCell<CPU>>,
     instruction: T,
@@ -36,6 +37,7 @@ pub fn read<'a, T: Read + 'a>(
     })
 }
 
+/// Creates the opcode for 'Write' instructions with absolute Y addressing
 pub fn write<'a, T: Write + 'a>(
     cpu: &'a Rc<RefCell<CPU>>,
     instruction: T,
@@ -79,6 +81,7 @@ mod tests {
         cpu.memory.set(cpu.registers.pc + 1, 0x31);
         cpu.memory.set(0x3125, 61);
         cpu.registers.a = 38;
+        cpu.registers.pc = 0;
         let cpu = Rc::new(RefCell::new(cpu));
         let instruction = ADC;
         let mut opcode = read(&cpu, instruction);
@@ -96,6 +99,7 @@ mod tests {
         let state = opcode.as_mut().resume(());
         assert_eq!(state, GeneratorState::Complete(cycle));
         assert_eq!(cpu.borrow().registers.a, 99);
+        assert_eq!(cpu.borrow().registers.pc, 2);
     }
 
     #[test]
@@ -103,6 +107,7 @@ mod tests {
         let mut cpu = CPU::mock();
         cpu.registers.a = 43;
         cpu.registers.y = 4;
+        cpu.registers.pc = 0;
         cpu.memory.set(cpu.registers.pc, 0x23);
         cpu.memory.set(cpu.registers.pc + 1, 0x44);
         cpu.memory.set(0x4427, 0);
@@ -123,5 +128,6 @@ mod tests {
         let state = opcode.as_mut().resume(());
         assert_eq!(state, GeneratorState::Complete(cycle));
         assert_eq!(cpu.borrow().memory.get(0x4427), 43);
+        assert_eq!(cpu.borrow().registers.pc, 2);
     }
 }

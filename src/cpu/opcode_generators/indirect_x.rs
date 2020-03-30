@@ -8,6 +8,7 @@ use crate::{
 };
 use std::{cell::RefCell, ops::Generator, pin::Pin, rc::Rc};
 
+/// Creates the opcode for 'Read' instructions with indirect X addressing
 pub fn read<'a, T: Read + 'a>(
     cpu: &'a Rc<RefCell<CPU>>,
     instruction: T,
@@ -37,6 +38,7 @@ pub fn read<'a, T: Read + 'a>(
     })
 }
 
+/// Creates the opcode for 'Write' instructions with indirect X addressing
 pub fn write<'a, T: Write + 'a>(
     cpu: &'a Rc<RefCell<CPU>>,
     instruction: T,
@@ -66,6 +68,7 @@ pub fn write<'a, T: Write + 'a>(
     })
 }
 
+/// Creates the opcode for 'Modify' instructions with indirect X addressing
 pub fn modify<'a, T: Modify + 'a>(
     cpu: &'a Rc<RefCell<CPU>>,
     instruction: T,
@@ -112,6 +115,7 @@ mod tests {
     fn test_read() {
         let mut cpu = CPU::mock();
         cpu.registers.x = 3;
+        cpu.registers.pc = 0;
         cpu.memory.set(cpu.registers.pc, 0x23);
         cpu.memory.set(0x26, 0x44);
         cpu.memory.set(0x27, 0x11);
@@ -134,12 +138,14 @@ mod tests {
         let state = opcode.as_mut().resume(());
         assert_eq!(state, GeneratorState::Complete(cycle));
         assert_eq!(cpu.borrow().registers.a, 163);
+        assert_eq!(cpu.borrow().registers.pc, 1);
     }
 
     #[test]
     fn test_modify() {
         let mut cpu = CPU::mock();
         cpu.registers.x = 3;
+        cpu.registers.pc = 0;
         cpu.memory.set(cpu.registers.pc, 0x23);
         cpu.memory.set(0x26, 0x26);
         cpu.memory.set(0x27, 0x44);
@@ -161,12 +167,14 @@ mod tests {
         let state = opcode.as_mut().resume(());
         assert_eq!(state, GeneratorState::Complete(cycle));
         assert_eq!(cpu.borrow().memory.get(0x4426), 0b1000_1010);
+        assert_eq!(cpu.borrow().registers.pc, 1);
     }
 
     #[test]
     fn test_write() {
         let mut cpu = CPU::mock();
         cpu.registers.a = 43;
+        cpu.registers.pc = 0;
         cpu.registers.x = 4;
         cpu.memory.set(cpu.registers.pc, 0x23);
         cpu.memory.set(0x27, 0x27);
@@ -189,5 +197,6 @@ mod tests {
         let state = opcode.as_mut().resume(());
         assert_eq!(state, GeneratorState::Complete(cycle));
         assert_eq!(cpu.borrow().memory.get(0x4427), 43);
+        assert_eq!(cpu.borrow().registers.pc, 1);
     }
 }

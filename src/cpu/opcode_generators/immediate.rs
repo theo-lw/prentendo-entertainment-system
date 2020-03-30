@@ -7,6 +7,7 @@ use crate::{
 };
 use std::{cell::RefCell, ops::Generator, pin::Pin, rc::Rc};
 
+/// Creates the opcode for 'Read' instructions with immediate addressing
 pub fn read<'a, T: Read + 'a>(
     cpu: &'a Rc<RefCell<CPU>>,
     instruction: T,
@@ -35,6 +36,7 @@ mod tests {
     #[test]
     fn test_read() {
         let mut cpu = CPU::mock();
+        cpu.registers.pc = 0;
         cpu.memory.set(cpu.registers.pc, 3);
         cpu.registers.a = 12;
         let cpu = Rc::new(RefCell::new(cpu));
@@ -54,5 +56,6 @@ mod tests {
         let state = opcode.as_mut().resume(());
         assert_eq!(state, GeneratorState::Complete(cycle));
         assert_eq!(cpu.borrow().registers.a, 15);
+        assert_eq!(cpu.borrow().registers.pc, 1);
     }
 }

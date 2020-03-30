@@ -7,6 +7,7 @@ use crate::{
 };
 use std::{cell::RefCell, ops::Generator, pin::Pin, rc::Rc};
 
+/// Creates the opcode for 'Read' instructions with zero Y addressing
 pub fn read<'a, T: Read + 'a>(
     cpu: &'a Rc<RefCell<CPU>>,
     instruction: T,
@@ -30,6 +31,7 @@ pub fn read<'a, T: Read + 'a>(
     })
 }
 
+/// Creates the opcode for 'Write' instructions with zero Y addressing
 pub fn write<'a, T: Write + 'a>(
     cpu: &'a Rc<RefCell<CPU>>,
     instruction: T,
@@ -63,6 +65,7 @@ mod tests {
     fn test_read() {
         let mut cpu = CPU::mock();
         cpu.registers.y = 34;
+        cpu.registers.pc = 0;
         cpu.memory.set(cpu.registers.pc, 0x23);
         cpu.memory.set(0x23 + 34, 19);
         cpu.registers.a = 133;
@@ -83,11 +86,13 @@ mod tests {
         let state = opcode.as_mut().resume(());
         assert_eq!(state, GeneratorState::Complete(cycle));
         assert_eq!(cpu.borrow().registers.a, 152);
+        assert_eq!(cpu.borrow().registers.pc, 1);
     }
 
     #[test]
     fn test_write() {
         let mut cpu = CPU::mock();
+        cpu.registers.pc = 0;
         cpu.registers.a = 43;
         cpu.registers.y = 5;
         cpu.memory.set(cpu.registers.pc, 0x10);
@@ -109,5 +114,6 @@ mod tests {
         let state = opcode.as_mut().resume(());
         assert_eq!(state, GeneratorState::Complete(cycle));
         assert_eq!(cpu.borrow().memory.get(0x15), 43);
+        assert_eq!(cpu.borrow().registers.pc, 1);
     }
 }
