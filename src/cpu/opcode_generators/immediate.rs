@@ -1,9 +1,7 @@
-use crate::{
-    cpu::{
-        instructions::{Read},
-        opcode_generators::{AddressingMode, CPUCycle},
-        state::CPU,
-    },
+use crate::cpu::{
+    instructions::Read,
+    opcode_generators::{AddressingMode, CPUCycle},
+    state::CPU,
 };
 use std::{cell::RefCell, ops::Generator, pin::Pin, rc::Rc};
 
@@ -23,14 +21,17 @@ pub fn read<'a, T: Read + 'a>(
         let addr: u16 = cpu.borrow().registers.pc;
         instruction.execute(cpu, addr);
         cpu.borrow_mut().registers.increment_pc();
-        return cycle;
+        cycle
     })
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{address::AddressMap, cpu::instructions::{Instruction, adc::ADC}};
+    use crate::{
+        address::AddressMap,
+        cpu::instructions::{adc::ADC, Instruction},
+    };
     use std::ops::GeneratorState;
 
     #[test]

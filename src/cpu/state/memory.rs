@@ -33,10 +33,8 @@ impl AddressMap for Memory {
     fn get(&self, index: u16) -> u8 {
         match index {
             0..=0x1FFF => self.internal_ram[usize::from(index % 0x800)],
-            0x2000..=0x3FFF => {
-                self.ppu_registers.borrow()[usize::from((index - 0x2000) % 0x8)].clone()
-            }
-            0x4000..=0x4017 => self.apu_and_io.borrow()[usize::from(index - 0x4000)].clone(),
+            0x2000..=0x3FFF => self.ppu_registers.borrow()[usize::from((index - 0x2000) % 0x8)],
+            0x4000..=0x4017 => self.apu_and_io.borrow()[usize::from(index - 0x4000)],
             0x4018..=0x401F => self.apu_and_io_disabled[usize::from(index - 0x4018)],
             0x4020..=0xFFFF => self.cartridge_space[usize::from(index - 0x4020)],
         }

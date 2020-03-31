@@ -2,6 +2,7 @@ use super::{Instruction, InstructionName, PushStack};
 use crate::cpu::state::CPU;
 use std::{cell::RefCell, rc::Rc};
 
+/// Represents the PHA instruction (http://www.obelisk.me.uk/6502/reference.html#PHA)
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct PHA;
 
@@ -20,7 +21,7 @@ impl PushStack for PHA {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
     fn test_pha() {
         let mut cpu = CPU::mock();

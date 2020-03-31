@@ -14,7 +14,6 @@ impl Opcode for AbsoluteX {
     fn generate() -> Pin<Box<dyn Generator<Yield = String, Return = ()>>> {
         Box::pin(move || {
             yield String::from("hello world!");
-            return;
         })
     }
 }

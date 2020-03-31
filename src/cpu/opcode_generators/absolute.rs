@@ -28,7 +28,7 @@ pub fn read<'a, T: Read + 'a>(
         yield cycle;
         cycle.next();
         instruction.execute(cpu, u16::from_be_bytes([high_byte, low_byte]));
-        return cycle;
+        cycle
     })
 }
 
@@ -52,7 +52,7 @@ pub fn write<'a, T: Write + 'a>(
         yield cycle;
         cycle.next();
         instruction.execute(cpu, u16::from_be_bytes([high_byte, low_byte]));
-        return cycle;
+        cycle
     })
 }
 
@@ -83,7 +83,7 @@ pub fn modify<'a, T: Modify + 'a>(
         yield cycle;
         cycle.next();
         instruction.execute(cpu, addr, val);
-        return cycle;
+        cycle
     })
 }
 
@@ -115,7 +115,7 @@ pub fn jsr<'a>(
         cycle.next();
         let high_byte: u8 = cpu.borrow_mut().get_and_increment_pc();
         cpu.borrow_mut().registers.pc = u16::from_be_bytes([high_byte, low_byte]);
-        return cycle;
+        cycle
     })
 }
 
@@ -136,14 +136,14 @@ pub fn jmp<'a>(
         cycle.next();
         let high_byte: u8 = cpu.borrow_mut().get_and_increment_pc();
         cpu.borrow_mut().registers.pc = u16::from_be_bytes([high_byte, low_byte]);
-        return cycle;
+        cycle
     })
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::cpu::instructions::{Instruction, adc::ADC, asl::ASL, sta::STA};
+    use crate::cpu::instructions::{adc::ADC, asl::ASL, sta::STA, Instruction};
     use std::ops::GeneratorState;
 
     #[test]
@@ -252,35 +252,53 @@ mod tests {
         };
         let state = opcode.as_mut().resume(());
         assert_eq!(state, GeneratorState::Yielded(cycle));
-        assert_eq!(cpu.borrow().registers.pc, u16::from_be_bytes([pc_high, pc_low]));
+        assert_eq!(
+            cpu.borrow().registers.pc,
+            u16::from_be_bytes([pc_high, pc_low])
+        );
         cycle.next();
         let state = opcode.as_mut().resume(());
         assert_eq!(state, GeneratorState::Yielded(cycle));
-        assert_eq!(cpu.borrow().registers.pc, u16::from_be_bytes([pc_high, pc_low])+1);
+        assert_eq!(
+            cpu.borrow().registers.pc,
+            u16::from_be_bytes([pc_high, pc_low]) + 1
+        );
         cycle.next();
         let state = opcode.as_mut().resume(());
         assert_eq!(state, GeneratorState::Yielded(cycle));
-        assert_eq!(cpu.borrow().registers.pc, u16::from_be_bytes([pc_high, pc_low])+1);
+        assert_eq!(
+            cpu.borrow().registers.pc,
+            u16::from_be_bytes([pc_high, pc_low]) + 1
+        );
         cycle.next();
         let state = opcode.as_mut().resume(());
         assert_eq!(state, GeneratorState::Yielded(cycle));
         assert_eq!(cpu.borrow().registers.s, initial_sp - 1);
         assert_eq!(cpu.borrow().memory.get(0x01FF), pc_high);
-        assert_eq!(cpu.borrow().registers.pc, u16::from_be_bytes([pc_high, pc_low])+1);
+        assert_eq!(
+            cpu.borrow().registers.pc,
+            u16::from_be_bytes([pc_high, pc_low]) + 1
+        );
         cycle.next();
         let state = opcode.as_mut().resume(());
         assert_eq!(state, GeneratorState::Yielded(cycle));
         assert_eq!(cpu.borrow().registers.s, initial_sp - 2);
         assert_eq!(cpu.borrow().memory.get(0x01FF), pc_high);
-        assert_eq!(cpu.borrow().memory.get(0x01FE), pc_low+1);
-        assert_eq!(cpu.borrow().registers.pc, u16::from_be_bytes([pc_high, pc_low])+1);
+        assert_eq!(cpu.borrow().memory.get(0x01FE), pc_low + 1);
+        assert_eq!(
+            cpu.borrow().registers.pc,
+            u16::from_be_bytes([pc_high, pc_low]) + 1
+        );
         cycle.next();
         let state = opcode.as_mut().resume(());
         assert_eq!(state, GeneratorState::Complete(cycle));
         assert_eq!(cpu.borrow().registers.s, initial_sp - 2);
         assert_eq!(cpu.borrow().memory.get(0x01FF), pc_high);
-        assert_eq!(cpu.borrow().memory.get(0x01FE), pc_low+1);
-        assert_eq!(cpu.borrow().registers.pc, u16::from_be_bytes([new_pc_high, new_pc_low]));
+        assert_eq!(cpu.borrow().memory.get(0x01FE), pc_low + 1);
+        assert_eq!(
+            cpu.borrow().registers.pc,
+            u16::from_be_bytes([new_pc_high, new_pc_low])
+        );
     }
 
     #[test]

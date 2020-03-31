@@ -1,9 +1,7 @@
-use crate::{
-    cpu::{
-        instructions::{Read, Write},
-        opcode_generators::{AddressingMode, CPUCycle},
-        state::CPU,
-    },
+use crate::cpu::{
+    instructions::{Read, Write},
+    opcode_generators::{AddressingMode, CPUCycle},
+    state::CPU,
 };
 use std::{cell::RefCell, ops::Generator, pin::Pin, rc::Rc};
 
@@ -27,7 +25,7 @@ pub fn read<'a, T: Read + 'a>(
         yield cycle;
         cycle.next();
         instruction.execute(cpu, u16::from_be_bytes([0, address]));
-        return cycle;
+        cycle
     })
 }
 
@@ -51,14 +49,17 @@ pub fn write<'a, T: Write + 'a>(
         yield cycle;
         cycle.next();
         instruction.execute(cpu, u16::from_be_bytes([0, address]));
-        return cycle;
+        cycle
     })
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{address::AddressMap, cpu::instructions::{Instruction, adc::ADC, sta::STA}};
+    use crate::{
+        address::AddressMap,
+        cpu::instructions::{adc::ADC, sta::STA, Instruction},
+    };
     use std::ops::GeneratorState;
 
     #[test]

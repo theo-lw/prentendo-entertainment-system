@@ -1,7 +1,7 @@
 use crate::{
     address::AddressMap,
     cpu::{
-        instructions::{InstructionName},
+        instructions::InstructionName,
         opcode_generators::{AddressingMode, CPUCycle},
         state::CPU,
     },
@@ -32,7 +32,7 @@ pub fn jmp<'a>(
         cycle.next();
         let high_byte: u8 = cpu.borrow().memory.get(pointer.wrapping_add(1));
         cpu.borrow_mut().registers.pc = u16::from_be_bytes([high_byte, low_byte]);
-        return cycle;
+        cycle
     })
 }
 
@@ -76,7 +76,9 @@ mod tests {
         cycle.next();
         let state = opcode.as_mut().resume(());
         assert_eq!(state, GeneratorState::Complete(cycle));
-        assert_eq!(cpu.borrow().registers.pc, u16::from_be_bytes([new_pc_high, new_pc_low]));
+        assert_eq!(
+            cpu.borrow().registers.pc,
+            u16::from_be_bytes([new_pc_high, new_pc_low])
+        );
     }
 }
-

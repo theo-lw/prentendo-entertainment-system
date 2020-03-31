@@ -25,7 +25,7 @@ pub fn read<'a, T: Read + 'a>(
         yield cycle;
         cycle.next();
         instruction.execute(cpu, u16::from_be_bytes([0, address]));
-        return cycle;
+        cycle
     })
 }
 
@@ -46,7 +46,7 @@ pub fn write<'a, T: Write + 'a>(
         yield cycle;
         cycle.next();
         instruction.execute(cpu, u16::from_be_bytes([0, address]));
-        return cycle;
+        cycle
     })
 }
 
@@ -74,14 +74,14 @@ pub fn modify<'a, T: Modify + 'a>(
         yield cycle;
         cycle.next();
         instruction.execute(cpu, addr, val);
-        return cycle;
+        cycle
     })
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::cpu::instructions::{Instruction, adc::ADC, asl::ASL, sta::STA};
+    use crate::cpu::instructions::{adc::ADC, asl::ASL, sta::STA, Instruction};
     use std::ops::GeneratorState;
 
     #[test]

@@ -5,6 +5,8 @@ use crate::address::AddressMap;
 use memory::Memory;
 use registers::Registers;
 
+/// This module holds code related to the CPU's state.
+
 /// Represents the CPU's state
 #[derive(Default)]
 pub struct CPU {
@@ -17,7 +19,7 @@ impl CPU {
     pub fn mock() -> Self {
         CPU {
             registers: Registers::mock(),
-            memory: Memory::mock()
+            memory: Memory::mock(),
         }
     }
 
@@ -25,8 +27,10 @@ impl CPU {
 
     /// Pushes a value onto the stack
     pub fn push_stack(&mut self, val: u8) {
-        self.memory
-            .set(u16::from_be_bytes([Self::STACK_PAGE, self.registers.s]), val);
+        self.memory.set(
+            u16::from_be_bytes([Self::STACK_PAGE, self.registers.s]),
+            val,
+        );
         self.registers.s = self.registers.s.wrapping_sub(1);
     }
 
@@ -45,7 +49,7 @@ impl CPU {
     pub fn get_and_increment_pc(&mut self) -> u8 {
         let result: u8 = self.memory.get(self.registers.pc);
         self.registers.increment_pc();
-        return result;
+        result
     }
 }
 

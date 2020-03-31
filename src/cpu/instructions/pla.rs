@@ -1,7 +1,8 @@
 use super::{Instruction, InstructionName, PullStack};
-use crate::cpu::state::{CPU, registers::Flag};
+use crate::cpu::state::{registers::Flag, CPU};
 use std::{cell::RefCell, rc::Rc};
 
+/// Represents the PLA instruction (http://www.obelisk.me.uk/6502/reference.html#PLA)
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct PLA;
 
@@ -17,7 +18,7 @@ impl PullStack for PLA {
         if val == 0 {
             cpu.borrow_mut().registers.set_flag(Flag::Z);
         }
-        if val & 0b1000_0000 != 0 { 
+        if val & 0b1000_0000 != 0 {
             cpu.borrow_mut().registers.set_flag(Flag::N);
         }
     }

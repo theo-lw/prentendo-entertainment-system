@@ -1,7 +1,8 @@
 use super::{Instruction, InstructionName, PushStack};
-use crate::cpu::state::{CPU, registers::Flag};
+use crate::cpu::state::{registers::Flag, CPU};
 use std::{cell::RefCell, rc::Rc};
 
+/// Represents the PHP instruction (http://www.obelisk.me.uk/6502/reference.html#PHP)
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct PHP;
 

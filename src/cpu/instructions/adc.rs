@@ -3,6 +3,7 @@ use crate::address::AddressMap;
 use crate::cpu::state::{registers::Flag, CPU};
 use std::{cell::RefCell, rc::Rc};
 
+/// Represents the ADC instruction (http://www.obelisk.me.uk/6502/reference.html#ADC)
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct ADC;
 
@@ -41,7 +42,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_adc_read() {
+    fn test_adc() {
         let mut cpu: CPU = CPU::mock();
         cpu.registers.p = 0b0010_0000;
         cpu.registers.set_flag(Flag::C);
@@ -54,16 +55,16 @@ mod tests {
     }
 
     #[test]
-    fn test_adc_read_n() {
+    fn test_adc_n() {
         let mut cpu: CPU = CPU::mock();
-        cpu.registers.p = 0b0010_0000;
+        cpu.registers.clear_flag(Flag::N);
         cpu.registers.a = 0b0100_0000;
         cpu.memory.set(cpu.registers.pc, 0b1000_0000);
         let cpu = Rc::new(RefCell::new(cpu));
         let addr: u16 = cpu.borrow().registers.pc;
         ADC.execute(&cpu, addr);
         assert_eq!(cpu.borrow().registers.get_flag(Flag::N), 1);
-        cpu.borrow_mut().registers.p = 0b0010_0000;
+        cpu.borrow_mut().registers.clear_flag(Flag::N);
         cpu.borrow_mut().memory.set(addr, 0b0100_0000);
         cpu.borrow_mut().registers.a = 0b0010_0000;
         ADC.execute(&cpu, addr);
@@ -71,16 +72,16 @@ mod tests {
     }
 
     #[test]
-    fn test_adc_read_z() {
+    fn test_adc_z() {
         let mut cpu: CPU = CPU::mock();
-        cpu.registers.p = 0b0010_0000;
+        cpu.registers.clear_flag(Flag::Z);
         cpu.registers.a = 0b0100_0000;
         cpu.memory.set(cpu.registers.pc, 0b1000_0000);
         let cpu = Rc::new(RefCell::new(cpu));
         let addr: u16 = cpu.borrow().registers.pc;
         ADC.execute(&cpu, addr);
         assert_eq!(cpu.borrow().registers.get_flag(Flag::Z), 0);
-        cpu.borrow_mut().registers.p = 0b0010_0000;
+        cpu.borrow_mut().registers.clear_flag(Flag::Z);
         cpu.borrow_mut().memory.set(addr, 0);
         cpu.borrow_mut().registers.a = 0;
         ADC.execute(&cpu, addr);
@@ -88,8 +89,9 @@ mod tests {
     }
 
     #[test]
-    fn test_adc_read_c() {
+    fn test_adc_c() {
         let mut cpu: CPU = CPU::mock();
+        cpu.registers.clear_flag(Flag::C);
         cpu.registers.p = 0b0010_0000;
         cpu.registers.a = 0b1111_1111;
         cpu.memory.set(cpu.registers.pc, 0b1000_0000);
@@ -97,7 +99,7 @@ mod tests {
         let addr: u16 = cpu.borrow().registers.pc;
         ADC.execute(&cpu, addr);
         assert_eq!(cpu.borrow().registers.get_flag(Flag::C), 1);
-        cpu.borrow_mut().registers.p = 0b0010_0000;
+        cpu.borrow_mut().registers.clear_flag(Flag::C);
         cpu.borrow_mut().memory.set(addr, 0b0100_0000);
         cpu.borrow_mut().registers.a = 0b0010_0000;
         ADC.execute(&cpu, addr);
@@ -105,19 +107,19 @@ mod tests {
     }
 
     #[test]
-    fn test_adc_read_v() {
+    fn test_adc_v() {
         let mut cpu: CPU = CPU::mock();
-        cpu.registers.p = 0b0010_0000;
+        cpu.registers.clear_flag(Flag::V);
         cpu.registers.a = 64i8 as u8;
         cpu.memory.set(cpu.registers.pc, 72i8 as u8);
         let cpu = Rc::new(RefCell::new(cpu));
         let addr: u16 = cpu.borrow().registers.pc;
         ADC.execute(&cpu, addr);
         assert_eq!(cpu.borrow().registers.get_flag(Flag::V), 1);
-        cpu.borrow_mut().registers.p = 0b0010_0000;
+        cpu.borrow_mut().registers.clear_flag(Flag::V);
         cpu.borrow_mut().memory.set(addr, 4i8 as u8);
         cpu.borrow_mut().registers.a = 43i8 as u8;
         ADC.execute(&cpu, addr);
-        assert_eq!(cpu.borrow().registers.get_flag(Flag::N), 0);
+        assert_eq!(cpu.borrow().registers.get_flag(Flag::V), 0);
     }
 }

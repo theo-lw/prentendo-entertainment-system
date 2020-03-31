@@ -1,8 +1,9 @@
-use super::{InstructionName, Implied, Instruction, Modify};
+use super::{Implied, Instruction, InstructionName, Modify};
 use crate::address::AddressMap;
 use crate::cpu::state::{registers::Flag, CPU};
 use std::{cell::RefCell, rc::Rc};
 
+/// Represents the ASL instruction (http://www.obelisk.me.uk/6502/reference.html#ASL)
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct ASL;
 
