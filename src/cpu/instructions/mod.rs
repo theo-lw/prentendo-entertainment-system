@@ -2,6 +2,14 @@ pub mod adc;
 pub mod and;
 pub mod asl;
 pub mod bcc;
+pub mod bcs;
+pub mod beq;
+pub mod bit;
+pub mod bmi;
+pub mod bne;
+pub mod bpl;
+pub mod bvc;
+pub mod bvs;
 pub mod pha;
 pub mod php;
 pub mod pla;
@@ -70,7 +78,15 @@ pub enum InstructionName {
     AND,
     ASL,
     BCC,
+    BCS,
+    BEQ,
+    BIT,
+    BMI,
+    BNE,
+    BPL,
     BRK,
+    BVC,
+    BVS,
     RTI,
     RTS,
     PHA,

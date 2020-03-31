@@ -40,7 +40,7 @@ pub fn relative<'a, T: Branch + 'a>(
                 cpu.borrow_mut().registers.set_pch(pc_high);
             }
         }
-        return cycle;
+        cycle
     })
 }
 
