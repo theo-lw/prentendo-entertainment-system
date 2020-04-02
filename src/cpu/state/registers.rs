@@ -1,3 +1,5 @@
+use crate::cpu::variables::Flag;
+
 /// Represents the registers of the NES CPU
 #[derive(Debug)]
 pub struct Registers {
@@ -71,17 +73,6 @@ impl Default for Registers {
             p: 0b0010_0000,
         }
     }
-}
-
-#[derive(Debug, Copy, Clone)]
-pub enum Flag {
-    C = 0,
-    Z = 1,
-    I = 2,
-    D = 3,
-    V = 6,
-    N = 7,
-    B = 4,
 }
 
 #[cfg(test)]

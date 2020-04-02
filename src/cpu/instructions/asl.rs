@@ -1,6 +1,8 @@
 use super::{Implied, Instruction, InstructionName, Modify};
+use crate::bitops::BitOps;
 use crate::address::AddressMap;
-use crate::cpu::state::{registers::Flag, CPU};
+use crate::cpu::state::CPU;
+use crate::cpu::variables::Flag;
 use std::{cell::RefCell, rc::Rc};
 
 /// Represents the ASL instruction (http://www.obelisk.me.uk/6502/reference.html#ASL)
@@ -10,15 +12,15 @@ pub struct ASL;
 impl ASL {
     fn set_flags_and_return(cpu: &Rc<RefCell<CPU>>, arg: u8) -> u8 {
         let result: u8 = arg << 1;
-        if arg & 0b1000_0000 == 0 {
-            cpu.borrow_mut().registers.clear_flag(Flag::C);
-        } else {
+        if arg.is_bit_set(7) {
             cpu.borrow_mut().registers.set_flag(Flag::C);
+        } else {
+            cpu.borrow_mut().registers.clear_flag(Flag::C);
         }
         if result == 0 {
             cpu.borrow_mut().registers.set_flag(Flag::Z);
         }
-        if result & 0b1000_0000 != 0 {
+        if result.is_bit_set(7) {
             cpu.borrow_mut().registers.set_flag(Flag::N);
         }
         result

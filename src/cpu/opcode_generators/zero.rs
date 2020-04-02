@@ -81,7 +81,8 @@ pub fn modify<'a, T: Modify + 'a>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::cpu::instructions::{adc::ADC, asl::ASL, sta::STA, Instruction};
+    use crate::cpu::instructions::{adc::ADC, asl::ASL, str::ST, Instruction};
+    use crate::cpu::variables::a_register::A;
     use std::ops::GeneratorState;
 
     #[test]
@@ -145,7 +146,7 @@ mod tests {
         cpu.memory.set(cpu.registers.pc, 0x10);
         cpu.memory.set(0x10, 0);
         let cpu = Rc::new(RefCell::new(cpu));
-        let instruction = STA;
+        let instruction = ST(A);
         let mut opcode = write(&cpu, instruction);
         let mut cycle = CPUCycle {
             instruction: instruction.name(),

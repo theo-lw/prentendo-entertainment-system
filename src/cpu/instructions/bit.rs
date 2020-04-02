@@ -1,6 +1,8 @@
 use super::{Instruction, InstructionName, Read};
+use crate::bitops::BitOps;
 use crate::address::AddressMap;
-use crate::cpu::state::{registers::Flag, CPU};
+use crate::cpu::state::CPU;
+use crate::cpu::variables::Flag;
 use std::{cell::RefCell, rc::Rc};
 
 /// Represents the BIT instruction (http://www.obelisk.me.uk/6502/reference.html#BIT)
@@ -19,15 +21,15 @@ impl Read for BIT {
         if cpu.borrow().registers.a & byte == 0 {
             cpu.borrow_mut().registers.set_flag(Flag::Z);
         }
-        if byte & 0b1000_0000 == 0 {
-            cpu.borrow_mut().registers.clear_flag(Flag::N);
-        } else {
+        if byte.is_bit_set(7) {
             cpu.borrow_mut().registers.set_flag(Flag::N);
-        }
-        if byte & 0b0100_0000 == 0 {
-            cpu.borrow_mut().registers.clear_flag(Flag::V);
         } else {
+            cpu.borrow_mut().registers.clear_flag(Flag::N);
+        }
+        if byte.is_bit_set(6) {
             cpu.borrow_mut().registers.set_flag(Flag::V);
+        } else {
+            cpu.borrow_mut().registers.clear_flag(Flag::V);
         }
     }
 }

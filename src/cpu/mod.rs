@@ -1,6 +1,7 @@
 pub mod instructions;
 pub mod opcode_generators;
 pub mod state;
+pub mod variables;
 
 use crate::address::AddressMap;
 use instructions::{adc::ADC, Instruction};

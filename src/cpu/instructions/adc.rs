@@ -1,6 +1,8 @@
 use super::{Instruction, InstructionName, Read};
 use crate::address::AddressMap;
-use crate::cpu::state::{registers::Flag, CPU};
+use crate::bitops::BitOps;
+use crate::cpu::state::CPU;
+use crate::cpu::variables::Flag;
 use std::{cell::RefCell, rc::Rc};
 
 /// Represents the ADC instruction (http://www.obelisk.me.uk/6502/reference.html#ADC)
@@ -20,7 +22,7 @@ impl Read for ADC {
         let a: u8 = cpu.borrow().registers.a;
         let (result, overflow1): (u8, bool) = a.overflowing_add(byte);
         let (result, overflow2): (u8, bool) = result.overflowing_add(c);
-        if result & (1 << 7) != 0 {
+        if result.is_bit_set(7) {
             cpu.borrow_mut().registers.set_flag(Flag::N);
         }
         if result == 0 {

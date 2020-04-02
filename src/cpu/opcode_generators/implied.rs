@@ -3,7 +3,8 @@ use crate::{
     cpu::{
         instructions::{Implied, InstructionName, PullStack, PushStack},
         opcode_generators::{AddressingMode, CPUCycle},
-        state::{registers::Flag, CPU},
+        state::CPU,
+        variables::Flag
     },
 };
 use std::{cell::RefCell, ops::Generator, pin::Pin, rc::Rc};
@@ -182,8 +183,9 @@ mod tests {
     use super::*;
     use crate::{
         address::AddressMap,
-        cpu::instructions::{asl::ASL, pha::PHA, plp::PLP, Instruction},
+        cpu::instructions::{asl::ASL, phr::PH, plr::PL, Instruction},
     };
+    use crate::cpu::variables::{a_register::A, p_register::P};
     use std::ops::GeneratorState;
 
     #[test]
@@ -220,7 +222,7 @@ mod tests {
         cpu.registers.s = initial_stack_pointer;
         cpu.memory.set(0x01FF, 2);
         let cpu = Rc::new(RefCell::new(cpu));
-        let instruction = PHA;
+        let instruction = PH(A);
         let mut opcode = push_stack(&cpu, instruction);
         let mut cycle = CPUCycle {
             instruction: instruction.name(),
@@ -251,7 +253,7 @@ mod tests {
         cpu.registers.s = initial_stack_pointer;
         cpu.push_stack(p_register_new);
         let cpu = Rc::new(RefCell::new(cpu));
-        let instruction = PLP;
+        let instruction = PL(P);
         let mut opcode = pull_stack(&cpu, instruction);
         let mut cycle = CPUCycle {
             instruction: instruction.name(),

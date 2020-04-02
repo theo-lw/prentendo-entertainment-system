@@ -1,20 +1,22 @@
 use super::{Branch, Instruction, InstructionName};
-use crate::cpu::state::{registers::Flag, CPU};
+use crate::cpu::state::CPU;
+use crate::cpu::variables::Flag;
 use std::{cell::RefCell, rc::Rc};
 
-/// Represents the BCC instruction (http://www.obelisk.me.uk/6502/reference.html#BCC)
+/// Represents the 'branch if set' instructions 
+/// (http://www.obelisk.me.uk/6502/reference.html#BS)
 #[derive(Debug, Copy, Clone, PartialEq)]
-pub struct BCC;
+pub struct BS(pub Flag);
 
-impl Instruction for BCC {
+impl Instruction for BS {
     fn name(&self) -> InstructionName {
-        InstructionName::BCC
+        InstructionName::BS(self.0)
     }
 }
 
-impl Branch for BCC {
+impl Branch for BS {
     fn should_branch(&self, cpu: &Rc<RefCell<CPU>>) -> bool {
-        cpu.borrow().registers.get_flag(Flag::C) == 0
+        cpu.borrow().registers.get_flag(self.0) == 1
     }
 }
 
@@ -23,12 +25,12 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_bcc() {
+    fn test_bs() {
         let mut cpu = CPU::mock();
         cpu.registers.clear_flag(Flag::C);
         let cpu = Rc::new(RefCell::new(cpu));
-        assert_eq!(BCC.should_branch(&cpu), true);
+        assert_eq!(BS(Flag::C).should_branch(&cpu), false);
         cpu.borrow_mut().registers.set_flag(Flag::C);
-        assert_eq!(BCC.should_branch(&cpu), false);
+        assert_eq!(BS(Flag::C).should_branch(&cpu), true);
     }
 }
