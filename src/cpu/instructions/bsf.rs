@@ -3,7 +3,7 @@ use crate::cpu::state::CPU;
 use crate::cpu::variables::Flag;
 use std::{cell::RefCell, rc::Rc};
 
-/// Represents the 'branch if set' instructions 
+/// Represents the 'branch if set' instructions
 /// (http://www.obelisk.me.uk/6502/reference.html#BS)
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct BS(pub Flag);
@@ -16,7 +16,7 @@ impl Instruction for BS {
 
 impl Branch for BS {
     fn should_branch(&self, cpu: &Rc<RefCell<CPU>>) -> bool {
-        cpu.borrow().registers.get_flag(self.0) == 1
+        cpu.borrow().registers.is_flag_set(self.0)
     }
 }
 

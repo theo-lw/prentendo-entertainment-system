@@ -1,4 +1,4 @@
-use super::{Instruction, InstructionName, Implied};
+use super::{Implied, Instruction, InstructionName};
 use crate::bitops::BitOps;
 use crate::cpu::state::CPU;
 use crate::cpu::variables::{Flag, Get, Set};
@@ -48,10 +48,10 @@ mod tests {
         cpu.registers.x = 100;
         let cpu = Rc::new(RefCell::new(cpu));
         DE(X).execute(&cpu);
-        assert_eq!(cpu.borrow().registers.get_flag(Flag::Z), 0);
+        assert_eq!(cpu.borrow().registers.is_flag_set(Flag::Z), false);
         cpu.borrow_mut().registers.x = 1;
         DE(X).execute(&cpu);
-        assert_eq!(cpu.borrow().registers.get_flag(Flag::Z), 1);
+        assert_eq!(cpu.borrow().registers.is_flag_set(Flag::Z), true);
     }
 
     #[test]
@@ -61,9 +61,9 @@ mod tests {
         cpu.registers.y = 100;
         let cpu = Rc::new(RefCell::new(cpu));
         DE(Y).execute(&cpu);
-        assert_eq!(cpu.borrow().registers.get_flag(Flag::N), 0);
+        assert_eq!(cpu.borrow().registers.is_flag_set(Flag::N), false);
         cpu.borrow_mut().registers.y = 0;
         DE(Y).execute(&cpu);
-        assert_eq!(cpu.borrow().registers.get_flag(Flag::N), 1);
+        assert_eq!(cpu.borrow().registers.is_flag_set(Flag::N), true);
     }
 }

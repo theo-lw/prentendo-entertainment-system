@@ -4,12 +4,13 @@ pub mod state;
 pub mod variables;
 
 use crate::address::AddressMap;
-use instructions::{adc::ADC, Instruction};
-use opcode_generators::{absolute, absolute_x};
+use instructions::{adc::ADC, nop::NOP, Instruction};
+use opcode_generators::{absolute, absolute_x, implied, CPUCycle};
 use state::CPU;
 use std::{
     cell::RefCell,
     ops::{Generator, GeneratorState},
+    pin::Pin,
     rc::Rc,
 };
 
@@ -32,13 +33,7 @@ use std::{
 
 pub fn cycle<'a, T: Instruction>(cpu: &'a Rc<RefCell<CPU>>) -> impl Generator + 'a {
     move || loop {
-        let opcode: u8 = cpu.borrow().memory.get(cpu.borrow().registers.pc);
-        cpu.borrow_mut().registers.pc += 1;
-        let mut generator = if opcode == 0 {
-            absolute_x::read(cpu, ADC)
-        } else {
-            absolute::read(cpu, ADC)
-        };
+        let mut generator = get_instruction(cpu); 
         'opcode: loop {
             match generator.as_mut().resume(()) {
                 GeneratorState::Yielded(x) => {
@@ -50,5 +45,16 @@ pub fn cycle<'a, T: Instruction>(cpu: &'a Rc<RefCell<CPU>>) -> impl Generator + 
                 }
             }
         }
+    }
+}
+
+fn get_instruction<'a>(
+    cpu: &'a Rc<RefCell<CPU>>,
+) -> Pin<Box<dyn Generator<Yield = CPUCycle, Return = CPUCycle> + 'a>> {
+    let opcode: u8 = cpu.borrow_mut().get_and_increment_pc();
+    match opcode {
+        // we treat unofficial opcodes (and unimplemented ones) as being NOP
+        // it is not strictly correct, but it will have to do for now 
+        _ => implied::implied(cpu, NOP)
     }
 }

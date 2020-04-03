@@ -2,8 +2,8 @@ pub mod adc;
 pub mod and;
 pub mod asl;
 pub mod bcf;
-pub mod bsf;
 pub mod bit;
+pub mod bsf;
 pub mod clf;
 pub mod cpr;
 pub mod dec;
@@ -12,13 +12,20 @@ pub mod eor;
 pub mod inc;
 pub mod inr;
 pub mod ldr;
+pub mod lsr;
 pub mod nop;
+pub mod ora;
 pub mod phr;
 pub mod plr;
+pub mod rol;
+pub mod ror;
+pub mod sbc;
+pub mod sef;
 pub mod str;
+pub mod trr;
 
 use crate::cpu::state::CPU;
-use crate::cpu::variables::{RegisterName, Flag};
+use crate::cpu::variables::{Flag, RegisterName};
 use std::{cell::RefCell, fmt::Debug, rc::Rc};
 
 /// This module contains instruction-related code. I have categorized instructions into the
@@ -95,10 +102,17 @@ pub enum InstructionName {
     JSR,
     JMP,
     LD(RegisterName),
+    LSR,
     NOP,
-    RTI,
-    RTS,
+    ORA,
     PH(RegisterName),
     PL(RegisterName),
+    ROL,
+    ROR,
+    RTI,
+    RTS,
+    SBC,
+    SE(Flag),
     ST(RegisterName),
+    T(RegisterName, RegisterName),
 }

@@ -50,10 +50,10 @@ mod tests {
         cpu.registers.clear_flag(Flag::Z);
         let cpu = Rc::new(RefCell::new(cpu));
         AND.execute(&cpu, 0x4304);
-        assert_eq!(cpu.borrow().registers.get_flag(Flag::Z), 0);
+        assert_eq!(cpu.borrow().registers.is_flag_set(Flag::Z), false);
         cpu.borrow_mut().memory.set(0x4304, 0);
         AND.execute(&cpu, 0x4304);
-        assert_eq!(cpu.borrow().registers.get_flag(Flag::Z), 1);
+        assert_eq!(cpu.borrow().registers.is_flag_set(Flag::Z), true);
     }
 
     #[test]
@@ -64,10 +64,10 @@ mod tests {
         cpu.registers.clear_flag(Flag::N);
         let cpu = Rc::new(RefCell::new(cpu));
         AND.execute(&cpu, 0x4304);
-        assert_eq!(cpu.borrow().registers.get_flag(Flag::N), 0);
+        assert_eq!(cpu.borrow().registers.is_flag_set(Flag::N), false);
         cpu.borrow_mut().registers.a = 0b1001_0010;
         cpu.borrow_mut().memory.set(0x4304, 0b1011_0001);
         AND.execute(&cpu, 0x4304);
-        assert_eq!(cpu.borrow().registers.get_flag(Flag::N), 1);
+        assert_eq!(cpu.borrow().registers.is_flag_set(Flag::N), true);
     }
 }

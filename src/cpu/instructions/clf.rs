@@ -3,7 +3,7 @@ use crate::cpu::state::CPU;
 use crate::cpu::variables::Flag;
 use std::{cell::RefCell, rc::Rc};
 
-/// Represents the 'clear' instructions 
+/// Represents the 'clear' instructions
 /// (http://www.obelisk.me.uk/6502/reference.html#CL)
 /// (http://www.obelisk.me.uk/6502/reference.html#CLD)
 /// (http://www.obelisk.me.uk/6502/reference.html#CLI)
@@ -33,9 +33,9 @@ mod tests {
         cpu.registers.clear_flag(Flag::C);
         let cpu = Rc::new(RefCell::new(cpu));
         CL(Flag::C).execute(&cpu);
-        assert_eq!(cpu.borrow().registers.get_flag(Flag::C), 0);
+        assert_eq!(cpu.borrow().registers.is_flag_set(Flag::C), false);
         cpu.borrow_mut().registers.set_flag(Flag::Z);
         CL(Flag::Z).execute(&cpu);
-        assert_eq!(cpu.borrow().registers.get_flag(Flag::C), 0);
+        assert_eq!(cpu.borrow().registers.is_flag_set(Flag::C), false);
     }
 }

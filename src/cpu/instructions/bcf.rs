@@ -3,7 +3,7 @@ use crate::cpu::state::CPU;
 use crate::cpu::variables::Flag;
 use std::{cell::RefCell, rc::Rc};
 
-/// Represents the 'branch if clear' instructions 
+/// Represents the 'branch if clear' instructions
 /// (http://www.obelisk.me.uk/6502/reference.html#BCC)
 /// (http://www.obelisk.me.uk/6502/reference.html#BNE)
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -17,7 +17,7 @@ impl Instruction for BC {
 
 impl Branch for BC {
     fn should_branch(&self, cpu: &Rc<RefCell<CPU>>) -> bool {
-        cpu.borrow().registers.get_flag(self.0) == 0
+        !cpu.borrow().registers.is_flag_set(self.0)
     }
 }
 

@@ -5,14 +5,19 @@ use crate::cpu::state::CPU;
 use crate::cpu::variables::Flag;
 use std::{cell::RefCell, rc::Rc};
 
-/// Represents the ASL instruction (http://www.obelisk.me.uk/6502/reference.html#ASL)
+/// Represents the ROR instruction (http://www.obelisk.me.uk/6502/reference.html#ROR)
 #[derive(Debug, Copy, Clone, PartialEq)]
-pub struct ASL;
+pub struct ROR;
 
-impl ASL {
+impl ROR {
     fn set_flags_and_return(cpu: &Rc<RefCell<CPU>>, arg: u8) -> u8 {
-        let result: u8 = arg << 1;
-        if arg.is_bit_set(7) {
+        let mut result: u8 = arg >> 1;
+        if cpu.borrow().registers.is_flag_set(Flag::C) {
+            result.set_bit(7);
+        } else {
+            result.clear_bit(7);
+        }
+        if arg.is_bit_set(0) {
             cpu.borrow_mut().registers.set_flag(Flag::C);
         } else {
             cpu.borrow_mut().registers.clear_flag(Flag::C);
@@ -27,20 +32,20 @@ impl ASL {
     }
 }
 
-impl Instruction for ASL {
+impl Instruction for ROR {
     fn name(&self) -> InstructionName {
-        InstructionName::ASL
+        InstructionName::ROR
     }
 }
 
-impl Modify for ASL {
+impl Modify for ROR {
     fn execute(&self, cpu: &Rc<RefCell<CPU>>, addr: u16, old_val: u8) {
         let new_val: u8 = Self::set_flags_and_return(cpu, old_val);
         cpu.borrow_mut().memory.set(addr, new_val);
     }
 }
 
-impl Implied for ASL {
+impl Implied for ROR {
     fn execute(&self, cpu: &Rc<RefCell<CPU>>) {
         let a: u8 = cpu.borrow().registers.a;
         let new_val: u8 = Self::set_flags_and_return(cpu, a);
@@ -53,53 +58,57 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_asl_c() {
+    fn test_rol_c() {
         let mut cpu: CPU = CPU::mock();
         cpu.registers.clear_flag(Flag::C);
         let cpu = Rc::new(RefCell::new(cpu));
-        ASL::set_flags_and_return(&cpu, 0b1100_0001);
+        ROR::set_flags_and_return(&cpu, 0b0100_0001);
         assert_eq!(cpu.borrow().registers.is_flag_set(Flag::C), true);
-        ASL::set_flags_and_return(&cpu, 0b0010_1011);
+        ROR::set_flags_and_return(&cpu, 0b1010_1010);
         assert_eq!(cpu.borrow().registers.is_flag_set(Flag::C), false);
     }
 
     #[test]
-    fn test_asl_z() {
+    fn test_rol_z() {
         let mut cpu: CPU = CPU::mock();
         cpu.registers.clear_flag(Flag::Z);
         let cpu = Rc::new(RefCell::new(cpu));
-        ASL::set_flags_and_return(&cpu, 0b1000_0000);
+        ROR::set_flags_and_return(&cpu, 0b0000_0001);
         assert_eq!(cpu.borrow().registers.is_flag_set(Flag::Z), true);
         cpu.borrow_mut().registers.clear_flag(Flag::Z);
-        ASL::set_flags_and_return(&cpu, 0b0010_1011);
+        ROR::set_flags_and_return(&cpu, 0b0010_1011);
         assert_eq!(cpu.borrow().registers.is_flag_set(Flag::Z), false);
     }
 
     #[test]
-    fn test_asl_n() {
+    fn test_rol_n() {
         let mut cpu: CPU = CPU::mock();
         cpu.registers.clear_flag(Flag::N);
+        cpu.registers.set_flag(Flag::C);
         let cpu = Rc::new(RefCell::new(cpu));
-        ASL::set_flags_and_return(&cpu, 0b0100_0000);
+        ROR::set_flags_and_return(&cpu, 0b0100_0000);
         assert_eq!(cpu.borrow().registers.is_flag_set(Flag::N), true);
         cpu.borrow_mut().registers.clear_flag(Flag::N);
-        ASL::set_flags_and_return(&cpu, 0b1010_1011);
+        ROR::set_flags_and_return(&cpu, 0b1010_1011);
         assert_eq!(cpu.borrow().registers.is_flag_set(Flag::N), false);
     }
 
     #[test]
-    fn test_asl_modify() {
-        let cpu = Rc::new(RefCell::new(CPU::mock()));
-        Modify::execute(&ASL, &cpu, 0x2013, 0b1001_1100);
-        assert_eq!(cpu.borrow().memory.get(0x2013), 0b0011_1000);
+    fn test_rol_modify() {
+        let mut cpu = CPU::mock();
+        cpu.registers.set_flag(Flag::C);
+        let cpu = Rc::new(RefCell::new(cpu));
+        Modify::execute(&ROR, &cpu, 0x2013, 0b1001_1100);
+        assert_eq!(cpu.borrow().memory.get(0x2013), 0b1100_1110);
     }
 
     #[test]
-    fn test_asl_implied() {
+    fn test_rol_implied() {
         let mut cpu: CPU = CPU::mock();
+        cpu.registers.clear_flag(Flag::C);
         cpu.registers.a = 0b0110_0010;
         let cpu = Rc::new(RefCell::new(cpu));
-        Implied::execute(&ASL, &cpu);
-        assert_eq!(cpu.borrow().registers.a, 0b1100_0100);
+        Implied::execute(&ROR, &cpu);
+        assert_eq!(cpu.borrow().registers.a, 0b0011_0001);
     }
 }

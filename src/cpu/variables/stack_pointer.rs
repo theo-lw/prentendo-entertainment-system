@@ -1,24 +1,24 @@
-use super::{Get, Set, Register, RegisterName};
+use super::{Get, Register, RegisterName, Set};
+use crate::cpu::state::CPU;
 use std::cell::RefCell;
 use std::rc::Rc;
-use crate::cpu::state::CPU;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct SP;
+pub struct S;
 
-impl Register for SP {
+impl Register for S {
     fn name(&self) -> RegisterName {
-        RegisterName::SP
+        RegisterName::S
     }
 }
 
-impl Get for SP {
+impl Get for S {
     fn get(&self, cpu: &Rc<RefCell<CPU>>) -> u8 {
         cpu.borrow().registers.s
     }
 }
 
-impl Set for SP {
+impl Set for S {
     fn set(&self, cpu: &Rc<RefCell<CPU>>, val: u8) {
         cpu.borrow_mut().registers.s = val;
     }
@@ -33,7 +33,7 @@ mod tests {
         let mut cpu = CPU::mock();
         cpu.registers.s = 23;
         let cpu = Rc::new(RefCell::new(cpu));
-        assert_eq!(SP.get(&cpu), 23);
+        assert_eq!(S.get(&cpu), 23);
     }
 
     #[test]
@@ -41,7 +41,7 @@ mod tests {
         let mut cpu = CPU::mock();
         cpu.registers.s = 40;
         let cpu = Rc::new(RefCell::new(cpu));
-        SP.set(&cpu, 94);
+        S.set(&cpu, 94);
         assert_eq!(cpu.borrow().registers.s, 94);
     }
 }

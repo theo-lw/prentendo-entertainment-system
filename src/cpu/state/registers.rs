@@ -1,3 +1,4 @@
+use crate::bitops::BitOps;
 use crate::cpu::variables::Flag;
 
 /// Represents the registers of the NES CPU
@@ -48,17 +49,17 @@ impl Registers {
 
     /// Sets the given flag
     pub fn set_flag(&mut self, flag: Flag) {
-        self.p |= 0b1 << (flag as u8);
+        self.p.set_bit(flag as usize);
     }
 
     /// Clears the given flag
     pub fn clear_flag(&mut self, flag: Flag) {
-        self.p &= !(0b1 << (flag as u8));
+        self.p.clear_bit(flag as usize);
     }
 
-    /// Returns the value of the flag (1 if it is on, 0 otherwise)
-    pub fn get_flag(&self, flag: Flag) -> u8 {
-        (self.p & (1 << (flag as u8))) >> (flag as u8)
+    /// Returns whether the flag is set or not
+    pub fn is_flag_set(&self, flag: Flag) -> bool {
+        self.p.is_bit_set(flag as usize)
     }
 }
 
@@ -90,12 +91,12 @@ mod tests {
     }
 
     #[test]
-    fn test_get_flag() {
+    fn test_is_flag_set() {
         let mut registers = Registers::mock();
         registers.p = 0b0010_0000;
-        assert_eq!(registers.get_flag(Flag::C), 0);
+        assert_eq!(registers.is_flag_set(Flag::C), false);
         registers.p = 0b0010_0001;
-        assert_eq!(registers.get_flag(Flag::C), 1);
+        assert_eq!(registers.is_flag_set(Flag::C), true);
     }
 
     #[test]

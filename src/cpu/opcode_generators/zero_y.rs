@@ -56,11 +56,11 @@ pub fn write<'a, T: Write + 'a>(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::cpu::variables::a_register::A;
     use crate::{
         address::AddressMap,
         cpu::instructions::{adc::ADC, str::ST, Instruction},
     };
-    use crate::cpu::variables::a_register::A;
     use std::ops::GeneratorState;
 
     #[test]

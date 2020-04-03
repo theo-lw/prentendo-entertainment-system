@@ -2,8 +2,8 @@
 use std::ops::{Generator, GeneratorState};
 use std::pin::Pin;
 mod address;
-mod cpu;
 mod bitops;
+mod cpu;
 
 trait Opcode {
     fn generate() -> Pin<Box<dyn Generator<Yield = String, Return = ()>>>;

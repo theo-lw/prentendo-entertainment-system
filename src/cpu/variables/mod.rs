@@ -1,12 +1,12 @@
+pub mod a_register;
+pub mod p_register;
+pub mod stack_pointer;
 pub mod x_register;
 pub mod y_register;
-pub mod a_register;
-pub mod stack_pointer;
-pub mod p_register;
 
+use crate::cpu::state::CPU;
 use std::cell::RefCell;
 use std::rc::Rc;
-use crate::cpu::state::CPU;
 
 pub trait Register {
     fn name(&self) -> RegisterName;
@@ -37,6 +37,6 @@ pub enum RegisterName {
     X,
     Y,
     A,
-    SP,
+    S,
     P,
 }

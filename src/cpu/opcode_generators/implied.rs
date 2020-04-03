@@ -4,7 +4,7 @@ use crate::{
         instructions::{Implied, InstructionName, PullStack, PushStack},
         opcode_generators::{AddressingMode, CPUCycle},
         state::CPU,
-        variables::Flag
+        variables::Flag,
     },
 };
 use std::{cell::RefCell, ops::Generator, pin::Pin, rc::Rc};
@@ -181,11 +181,11 @@ pub fn brk<'a>(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::cpu::variables::{a_register::A, p_register::P};
     use crate::{
         address::AddressMap,
         cpu::instructions::{asl::ASL, phr::PH, plr::PL, Instruction},
     };
-    use crate::cpu::variables::{a_register::A, p_register::P};
     use std::ops::GeneratorState;
 
     #[test]

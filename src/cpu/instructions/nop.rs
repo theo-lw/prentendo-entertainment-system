@@ -1,4 +1,4 @@
-use super::{Instruction, InstructionName, Implied};
+use super::{Implied, Instruction, InstructionName};
 use crate::cpu::state::CPU;
 use std::{cell::RefCell, rc::Rc};
 
@@ -13,8 +13,7 @@ impl Instruction for NOP {
 }
 
 impl Implied for NOP {
-    fn execute(&self, _: &Rc<RefCell<CPU>>) {
-    }
+    fn execute(&self, _: &Rc<RefCell<CPU>>) {}
 }
 
 #[cfg(test)]

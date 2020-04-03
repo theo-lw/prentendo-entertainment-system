@@ -2,27 +2,27 @@ use super::{Instruction, InstructionName, Read};
 use crate::address::AddressMap;
 use crate::bitops::BitOps;
 use crate::cpu::state::CPU;
-use crate::cpu::variables::{Flag, Set};
+use crate::cpu::variables::Flag;
 use std::{cell::RefCell, rc::Rc};
 
-/// Represents the LD instruction (http://www.obelisk.me.uk/6502/reference.html#LD)
+/// Represents the ORA instruction (http://www.obelisk.me.uk/6502/reference.html#ORA)
 #[derive(Debug, Copy, Clone, PartialEq)]
-pub struct LD<T: Set>(pub T);
+pub struct ORA;
 
-impl<T: Set> Instruction for LD<T> {
+impl Instruction for ORA {
     fn name(&self) -> InstructionName {
-        InstructionName::LD(self.0.name())
+        InstructionName::ORA
     }
 }
 
-impl<T: Set> Read for LD<T> {
+impl Read for ORA {
     fn execute(&self, cpu: &Rc<RefCell<CPU>>, addr: u16) {
         let byte: u8 = cpu.borrow().memory.get(addr);
-        self.0.set(cpu, byte);
-        if byte == 0 {
+        cpu.borrow_mut().registers.a |= byte;
+        if cpu.borrow().registers.a == 0 {
             cpu.borrow_mut().registers.set_flag(Flag::Z);
         }
-        if byte.is_bit_set(7) {
+        if cpu.borrow().registers.a.is_bit_set(7) {
             cpu.borrow_mut().registers.set_flag(Flag::N);
         }
     }
@@ -31,44 +31,43 @@ impl<T: Set> Read for LD<T> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::cpu::variables::{a_register::A, x_register::X, y_register::Y};
 
     #[test]
-    fn test_ld() {
+    fn test_ora() {
         let mut cpu = CPU::mock();
         cpu.memory.set(0x4304, 0b1001_0110);
         cpu.registers.a = 0b1000_0101;
         let cpu = Rc::new(RefCell::new(cpu));
-        LD(A).execute(&cpu, 0x4304);
-        assert_eq!(cpu.borrow().registers.a, 0b1001_0110);
+        ORA.execute(&cpu, 0x4304);
+        assert_eq!(cpu.borrow().registers.a, 0b1001_0111);
     }
 
     #[test]
-    fn test_ld_z() {
+    fn test_ora_z() {
         let mut cpu = CPU::mock();
         cpu.memory.set(0x4304, 0b1001_0110);
-        cpu.registers.x = 0b1000_0101;
+        cpu.registers.a = 0b1000_0101;
         cpu.registers.clear_flag(Flag::Z);
         let cpu = Rc::new(RefCell::new(cpu));
-        LD(X).execute(&cpu, 0x4304);
+        ORA.execute(&cpu, 0x4304);
         assert_eq!(cpu.borrow().registers.is_flag_set(Flag::Z), false);
         cpu.borrow_mut().memory.set(0x4304, 0);
-        LD(X).execute(&cpu, 0x4304);
+        cpu.borrow_mut().registers.a = 0;
+        ORA.execute(&cpu, 0x4304);
         assert_eq!(cpu.borrow().registers.is_flag_set(Flag::Z), true);
     }
 
     #[test]
-    fn test_ld_n() {
+    fn test_ora_n() {
         let mut cpu = CPU::mock();
         cpu.memory.set(0x4304, 0b0101_0110);
-        cpu.registers.y = 0b1000_0101;
+        cpu.registers.a = 0b0000_0101;
         cpu.registers.clear_flag(Flag::N);
         let cpu = Rc::new(RefCell::new(cpu));
-        LD(Y).execute(&cpu, 0x4304);
+        ORA.execute(&cpu, 0x4304);
         assert_eq!(cpu.borrow().registers.is_flag_set(Flag::N), false);
-        cpu.borrow_mut().registers.a = 0b1001_0010;
         cpu.borrow_mut().memory.set(0x4304, 0b1011_0001);
-        LD(Y).execute(&cpu, 0x4304);
+        ORA.execute(&cpu, 0x4304);
         assert_eq!(cpu.borrow().registers.is_flag_set(Flag::N), true);
     }
 }

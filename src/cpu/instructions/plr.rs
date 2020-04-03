@@ -1,7 +1,7 @@
 use super::{Instruction, InstructionName, PullStack};
+use crate::bitops::BitOps;
 use crate::cpu::state::CPU;
 use crate::cpu::variables::{Flag, Set};
-use crate::bitops::BitOps;
 use std::{cell::RefCell, rc::Rc};
 
 /// Represents the PL instruction (http://www.obelisk.me.uk/6502/reference.html#PL)
@@ -46,9 +46,9 @@ mod tests {
         cpu.registers.clear_flag(Flag::Z);
         let cpu = Rc::new(RefCell::new(cpu));
         PL(A).set(&cpu, 12);
-        assert_eq!(cpu.borrow().registers.get_flag(Flag::Z), 0);
+        assert_eq!(cpu.borrow().registers.is_flag_set(Flag::Z), false);
         PL(A).set(&cpu, 0);
-        assert_eq!(cpu.borrow().registers.get_flag(Flag::Z), 1);
+        assert_eq!(cpu.borrow().registers.is_flag_set(Flag::Z), true);
     }
 
     #[test]
@@ -57,8 +57,8 @@ mod tests {
         cpu.registers.clear_flag(Flag::N);
         let cpu = Rc::new(RefCell::new(cpu));
         PL(A).set(&cpu, 0);
-        assert_eq!(cpu.borrow().registers.get_flag(Flag::N), 0);
+        assert_eq!(cpu.borrow().registers.is_flag_set(Flag::N), false);
         PL(A).set(&cpu, 0b1100_0010);
-        assert_eq!(cpu.borrow().registers.get_flag(Flag::N), 1);
+        assert_eq!(cpu.borrow().registers.is_flag_set(Flag::N), true);
     }
 }

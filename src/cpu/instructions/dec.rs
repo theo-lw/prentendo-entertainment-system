@@ -1,6 +1,6 @@
 use super::{Instruction, InstructionName, Modify};
-use crate::bitops::BitOps;
 use crate::address::AddressMap;
+use crate::bitops::BitOps;
 use crate::cpu::state::CPU;
 use crate::cpu::variables::Flag;
 use std::{cell::RefCell, rc::Rc};
@@ -48,10 +48,10 @@ mod tests {
         cpu.memory.set(0x3209, 100);
         let cpu = Rc::new(RefCell::new(cpu));
         DEC.execute(&cpu, 0x3209, 100);
-        assert_eq!(cpu.borrow().registers.get_flag(Flag::Z), 0);
+        assert_eq!(cpu.borrow().registers.is_flag_set(Flag::Z), false);
         cpu.borrow_mut().memory.set(0x3209, 1);
         DEC.execute(&cpu, 0x3209, 1);
-        assert_eq!(cpu.borrow().registers.get_flag(Flag::Z), 1);
+        assert_eq!(cpu.borrow().registers.is_flag_set(Flag::Z), true);
     }
 
     #[test]
@@ -61,9 +61,9 @@ mod tests {
         cpu.memory.set(0x3209, 100);
         let cpu = Rc::new(RefCell::new(cpu));
         DEC.execute(&cpu, 0x3209, 100);
-        assert_eq!(cpu.borrow().registers.get_flag(Flag::N), 0);
+        assert_eq!(cpu.borrow().registers.is_flag_set(Flag::N), false);
         cpu.borrow_mut().memory.set(0x3209, 0);
         DEC.execute(&cpu, 0x3209, 0);
-        assert_eq!(cpu.borrow().registers.get_flag(Flag::N), 1);
+        assert_eq!(cpu.borrow().registers.is_flag_set(Flag::N), true);
     }
 }

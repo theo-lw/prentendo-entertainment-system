@@ -1,7 +1,7 @@
-use super::{Get, Set, Register, RegisterName};
+use super::{Get, Register, RegisterName, Set};
+use crate::cpu::state::CPU;
 use std::cell::RefCell;
 use std::rc::Rc;
-use crate::cpu::state::CPU;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct P;
