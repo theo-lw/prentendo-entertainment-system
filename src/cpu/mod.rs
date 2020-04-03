@@ -42,7 +42,7 @@ use variables::{
 ///
 /// If you look at the instruction set, you'll notice that there exist many instructions that do
 /// the same thing but on different flags and registers. The `variables` module is an attempt to
-/// decouple instructions from the data they act on. 
+/// decouple instructions from the data they act on.
 
 /// Executes a CPU cycle
 pub fn cycle<'a, T: Instruction>(cpu: &'a Rc<RefCell<CPU>>) -> impl Generator + 'a {
@@ -223,7 +223,7 @@ fn get_instruction<'a>(
         0x2E => absolute::modify(cpu, ROL),
         0x3E => absolute_x::modify(cpu, ROL),
         // ROR
-        0x6A => implied::implied(cpu, ROR), 
+        0x6A => implied::implied(cpu, ROR),
         0x66 => zero::modify(cpu, ROR),
         0x76 => zero_x::modify(cpu, ROR),
         0x6E => absolute::modify(cpu, ROR),
@@ -267,7 +267,7 @@ fn get_instruction<'a>(
         0xAA => implied::implied(cpu, T(A, X)),
         // TAY
         0xA8 => implied::implied(cpu, T(A, Y)),
-        // TSX 
+        // TSX
         0xBA => implied::implied(cpu, T(S, X)),
         // TXA
         0x8A => implied::implied(cpu, T(X, A)),

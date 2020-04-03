@@ -8,7 +8,7 @@ use crate::cpu::state::CPU;
 use std::cell::RefCell;
 use std::rc::Rc;
 
-/// This module contains code representing the 'variables' acted on by instructions. 
+/// This module contains code representing the 'variables' acted on by instructions.
 
 /// Trait representing register variables
 pub trait Register {
