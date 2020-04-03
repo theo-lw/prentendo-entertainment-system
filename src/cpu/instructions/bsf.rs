@@ -4,7 +4,10 @@ use crate::cpu::variables::Flag;
 use std::{cell::RefCell, rc::Rc};
 
 /// Represents the 'branch if set' instructions
-/// (http://www.obelisk.me.uk/6502/reference.html#BS)
+/// (http://www.obelisk.me.uk/6502/reference.html#BCS)
+/// (http://www.obelisk.me.uk/6502/reference.html#BEQ)
+/// (http://www.obelisk.me.uk/6502/reference.html#BMI)
+/// (http://www.obelisk.me.uk/6502/reference.html#BVS)
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct BS(pub Flag);
 

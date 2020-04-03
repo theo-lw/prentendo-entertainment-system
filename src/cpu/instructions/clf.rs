@@ -4,7 +4,7 @@ use crate::cpu::variables::Flag;
 use std::{cell::RefCell, rc::Rc};
 
 /// Represents the 'clear' instructions
-/// (http://www.obelisk.me.uk/6502/reference.html#CL)
+/// (http://www.obelisk.me.uk/6502/reference.html#CLC)
 /// (http://www.obelisk.me.uk/6502/reference.html#CLD)
 /// (http://www.obelisk.me.uk/6502/reference.html#CLI)
 /// (http://www.obelisk.me.uk/6502/reference.html#CLV)

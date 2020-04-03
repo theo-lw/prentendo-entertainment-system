@@ -5,7 +5,10 @@ use crate::cpu::state::CPU;
 use crate::cpu::variables::{Flag, Set};
 use std::{cell::RefCell, rc::Rc};
 
-/// Represents the LD instruction (http://www.obelisk.me.uk/6502/reference.html#LD)
+/// Represents the LD instructions
+/// (http://www.obelisk.me.uk/6502/reference.html#LDA)
+/// (http://www.obelisk.me.uk/6502/reference.html#LDX)
+/// (http://www.obelisk.me.uk/6502/reference.html#LDY)
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct LD<T: Set>(pub T);
 

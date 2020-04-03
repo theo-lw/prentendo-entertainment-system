@@ -4,9 +4,11 @@ use crate::cpu::state::CPU;
 use crate::cpu::variables::{Flag, Get, Set};
 use std::{cell::RefCell, rc::Rc};
 
-/// Represents the IN instruction (http://www.obelisk.me.uk/6502/reference.html#IN)
+/// Represents the 'increment register' instructions
+/// (http://www.obelisk.me.uk/6502/reference.html#INX)
+/// (http://www.obelisk.me.uk/6502/reference.html#INY)
 #[derive(Debug, Copy, Clone, PartialEq)]
-pub struct IN<T: Get + Set>(T);
+pub struct IN<T: Get + Set>(pub T);
 
 impl<T: Get + Set> Instruction for IN<T> {
     fn name(&self) -> InstructionName {

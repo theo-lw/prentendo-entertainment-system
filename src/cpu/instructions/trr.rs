@@ -5,10 +5,12 @@ use crate::cpu::variables::{Flag, Get, Set};
 use std::{cell::RefCell, rc::Rc};
 
 /// Represents the 'transfer' instructions
-/// (http://www.obelisk.me.uk/6502/reference.html#T)
-/// (http://www.obelisk.me.uk/6502/reference.html#TD)
-/// (http://www.obelisk.me.uk/6502/reference.html#TI)
-/// (http://www.obelisk.me.uk/6502/reference.html#TV)
+/// (http://www.obelisk.me.uk/6502/reference.html#TAX)
+/// (http://www.obelisk.me.uk/6502/reference.html#TAY)
+/// (http://www.obelisk.me.uk/6502/reference.html#TSX)
+/// (http://www.obelisk.me.uk/6502/reference.html#TXA)
+/// (http://www.obelisk.me.uk/6502/reference.html#TXS)
+/// (http://www.obelisk.me.uk/6502/reference.html#TYA)
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct T<U: Get, V: Set>(pub U, pub V);
 

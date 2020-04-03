@@ -4,7 +4,9 @@ use crate::cpu::state::CPU;
 use crate::cpu::variables::{Flag, Get, Set};
 use std::{cell::RefCell, rc::Rc};
 
-/// Represents the DE instruction (http://www.obelisk.me.uk/6502/reference.html#DE)
+/// Represents the 'decrement register' instructions
+/// (http://www.obelisk.me.uk/6502/reference.html#DEX)
+/// (http://www.obelisk.me.uk/6502/reference.html#DEY)
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct DE<T: Get + Set>(pub T);
 

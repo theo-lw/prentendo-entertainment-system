@@ -4,10 +4,9 @@ use crate::cpu::variables::Flag;
 use std::{cell::RefCell, rc::Rc};
 
 /// Represents the 'set flag' instructions
-/// (http://www.obelisk.me.uk/6502/reference.html#SE)
+/// (http://www.obelisk.me.uk/6502/reference.html#SEC)
 /// (http://www.obelisk.me.uk/6502/reference.html#SED)
 /// (http://www.obelisk.me.uk/6502/reference.html#SEI)
-/// (http://www.obelisk.me.uk/6502/reference.html#SEV)
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct SE(pub Flag);
 

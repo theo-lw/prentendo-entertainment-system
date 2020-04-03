@@ -4,7 +4,10 @@ use crate::cpu::state::CPU;
 use crate::cpu::variables::Get;
 use std::{cell::RefCell, rc::Rc};
 
-/// Represents the ST instruction (http://www.obelisk.me.uk/6502/reference.html#ST)
+/// Represents the 'store' instructions
+/// (http://www.obelisk.me.uk/6502/reference.html#STA)
+/// (http://www.obelisk.me.uk/6502/reference.html#STX)
+/// (http://www.obelisk.me.uk/6502/reference.html#STY)
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct ST<T: Get>(pub T);
 

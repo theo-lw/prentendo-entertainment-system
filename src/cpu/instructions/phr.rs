@@ -3,7 +3,9 @@ use crate::cpu::state::CPU;
 use crate::cpu::variables::Get;
 use std::{cell::RefCell, rc::Rc};
 
-/// Represents the PH instruction (http://www.obelisk.me.uk/6502/reference.html#PH)
+/// Represents the 'push register' instructions
+/// (http://www.obelisk.me.uk/6502/reference.html#PHA)
+/// (http://www.obelisk.me.uk/6502/reference.html#PHP)
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct PH<T: Get>(pub T);
 

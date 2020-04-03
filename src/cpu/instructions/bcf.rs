@@ -6,6 +6,8 @@ use std::{cell::RefCell, rc::Rc};
 /// Represents the 'branch if clear' instructions
 /// (http://www.obelisk.me.uk/6502/reference.html#BCC)
 /// (http://www.obelisk.me.uk/6502/reference.html#BNE)
+/// (http://www.obelisk.me.uk/6502/reference.html#BPL)
+/// (http://www.obelisk.me.uk/6502/reference.html#BVC)
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct BC(pub Flag);
 

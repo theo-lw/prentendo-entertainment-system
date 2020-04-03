@@ -8,19 +8,24 @@ use crate::cpu::state::CPU;
 use std::cell::RefCell;
 use std::rc::Rc;
 
+/// This module contains code representing the 'variables' acted on by instructions. 
+
+/// Trait representing register variables
 pub trait Register {
     fn name(&self) -> RegisterName;
 }
 
+/// Trait for register variables that can be queried
 pub trait Get: Register {
     fn get(&self, cpu: &Rc<RefCell<CPU>>) -> u8;
 }
 
+/// Trait for register variables that can be set
 pub trait Set: Register {
     fn set(&self, cpu: &Rc<RefCell<CPU>>, val: u8);
 }
 
-/// Flags are a special type of variable
+/// Enum representing flag variables
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum Flag {
     C = 0,
@@ -32,6 +37,7 @@ pub enum Flag {
     B = 4,
 }
 
+/// Enum representing register names
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum RegisterName {
     X,

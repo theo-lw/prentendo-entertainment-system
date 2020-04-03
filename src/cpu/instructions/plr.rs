@@ -4,7 +4,9 @@ use crate::cpu::state::CPU;
 use crate::cpu::variables::{Flag, Set};
 use std::{cell::RefCell, rc::Rc};
 
-/// Represents the PL instruction (http://www.obelisk.me.uk/6502/reference.html#PL)
+/// Represents the 'pull stack' instructions
+/// (http://www.obelisk.me.uk/6502/reference.html#PLA)
+/// (http://www.obelisk.me.uk/6502/reference.html#PLP)
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct PL<T: Set>(pub T);
 

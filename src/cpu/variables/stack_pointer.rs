@@ -3,6 +3,7 @@ use crate::cpu::state::CPU;
 use std::cell::RefCell;
 use std::rc::Rc;
 
+/// Represents the Stack Pointer
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct S;
 
