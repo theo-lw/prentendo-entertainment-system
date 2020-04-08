@@ -1,6 +1,5 @@
 use super::{Implied, Instruction, InstructionName};
-use crate::cpu::state::CPU;
-use std::{cell::RefCell, rc::Rc};
+use crate::state::CPU;
 
 /// Represents the NOP instruction (http://www.obelisk.me.uk/6502/reference.html#NOP)
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -12,24 +11,25 @@ impl Instruction for NOP {
     }
 }
 
-impl Implied for NOP {
-    fn execute(&self, _: &Rc<RefCell<CPU>>) {}
+impl<S: CPU> Implied<S> for NOP {
+    fn execute(&self, _: &mut S) {}
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::state::NES;
+    use crate::state::cpu::Registers;
 
     #[test]
     fn test_nop() {
-        let mut cpu = CPU::mock();
-        cpu.registers.x = 100;
-        cpu.registers.y = 23;
-        cpu.registers.a = 96;
-        let cpu = Rc::new(RefCell::new(cpu));
-        NOP.execute(&cpu);
-        assert_eq!(cpu.borrow().registers.x, 100);
-        assert_eq!(cpu.borrow().registers.y, 23);
-        assert_eq!(cpu.borrow().registers.a, 96);
+        let mut cpu = NES::mock();
+        cpu.set_x(100);
+        cpu.set_y(100);
+        cpu.set_a(100);
+        NOP.execute(&mut cpu);
+        assert_eq!(cpu.get_x(), 100);
+        assert_eq!(cpu.get_y(), 100);
+        assert_eq!(cpu.get_a(), 100);
     }
 }

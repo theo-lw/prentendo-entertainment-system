@@ -1,23 +1,55 @@
-pub mod memory;
-pub mod registers;
+pub mod cpu;
 
-use crate::address::AddressMap;
-use memory::Memory;
-use registers::Registers;
+/// This module holds code related to the NES's state.
 
-/// This module holds code related to the CPU's state.
-
-/// Represents the CPU's state
-#[derive(Default)]
-pub struct CPU {
-    pub registers: Registers,
-    pub memory: Memory,
+pub trait CPU: cpu::Registers + cpu::Memory + cpu::Stack {
+    fn get_and_increment_pc(&mut self) -> u8 {
+        let result: u8 = self.get_mem(self.get_pc());
+        self.increment_pc();
+        result
+    }
 }
 
-impl CPU {
+/// Represents the CPU's internal state
+struct CPUState {
+    a: u8,
+    x: u8,
+    y: u8,
+    pc: u16,
+    s: u8,
+    p: u8,
+    internal_ram: [u8; 0x800],
+}
+
+/// Represents the NES state
+pub struct NES {
+    cpu: CPUState
+}
+
+impl NES {
     #[cfg(test)]
     pub fn mock() -> Self {
-        CPU {
+        NES {
+            cpu: CPUState {
+                a: 0,
+                x: 0,
+                y: 0,
+                pc: 0,
+                s: 0,
+                p: 0,
+                internal_ram: [0; 0x800]
+            }
+        }
+    }
+}
+
+impl CPU for NES {}
+
+/*
+impl NES {
+    #[cfg(test)]
+    pub fn mock() -> Self {
+        NES {
             registers: Registers::mock(),
             memory: Memory::mock(),
         }
@@ -79,3 +111,4 @@ mod tests {
         assert_eq!(cpu.registers.pc, 4);
     }
 }
+*/

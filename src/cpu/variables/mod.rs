@@ -4,9 +4,7 @@ pub mod stack_pointer;
 pub mod x_register;
 pub mod y_register;
 
-use crate::cpu::state::CPU;
-use std::cell::RefCell;
-use std::rc::Rc;
+use crate::state::CPU;
 
 /// This module contains code representing the 'variables' acted on by instructions.
 
@@ -17,12 +15,12 @@ pub trait Register {
 
 /// Trait for register variables that can be queried
 pub trait Get: Register {
-    fn get(&self, cpu: &Rc<RefCell<CPU>>) -> u8;
+    fn get(&self, cpu: &dyn CPU) -> u8;
 }
 
 /// Trait for register variables that can be set
 pub trait Set: Register {
-    fn set(&self, cpu: &Rc<RefCell<CPU>>, val: u8);
+    fn set(&self, cpu: &mut dyn CPU, val: u8);
 }
 
 /// Enum representing flag variables

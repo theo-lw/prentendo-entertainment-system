@@ -1,9 +1,7 @@
 use super::{Instruction, InstructionName, Read};
-use crate::address::AddressMap;
 use crate::bitops::BitOps;
-use crate::cpu::state::CPU;
+use crate::state::CPU;
 use crate::cpu::variables::{Flag, Set};
-use std::{cell::RefCell, rc::Rc};
 
 /// Represents the LD instructions
 /// (http://www.obelisk.me.uk/6502/reference.html#LDA)
@@ -18,15 +16,15 @@ impl<T: Set> Instruction for LD<T> {
     }
 }
 
-impl<T: Set> Read for LD<T> {
-    fn execute(&self, cpu: &Rc<RefCell<CPU>>, addr: u16) {
-        let byte: u8 = cpu.borrow().memory.get(addr);
+impl<T: Set, S: CPU> Read<S> for LD<T> {
+    fn execute(&self, cpu: &mut S, addr: u16) {
+        let byte: u8 = cpu.get_mem(addr);
         self.0.set(cpu, byte);
         if byte == 0 {
-            cpu.borrow_mut().registers.set_flag(Flag::Z);
+            cpu.set_flag(Flag::Z);
         }
         if byte.is_bit_set(7) {
-            cpu.borrow_mut().registers.set_flag(Flag::N);
+            cpu.set_flag(Flag::N);
         }
     }
 }
@@ -35,43 +33,42 @@ impl<T: Set> Read for LD<T> {
 mod tests {
     use super::*;
     use crate::cpu::variables::{a_register::A, x_register::X, y_register::Y};
+    use crate::state::NES;
+    use crate::state::cpu::{Registers, Memory};
 
     #[test]
     fn test_ld() {
-        let mut cpu = CPU::mock();
-        cpu.memory.set(0x4304, 0b1001_0110);
-        cpu.registers.a = 0b1000_0101;
-        let cpu = Rc::new(RefCell::new(cpu));
-        LD(A).execute(&cpu, 0x4304);
-        assert_eq!(cpu.borrow().registers.a, 0b1001_0110);
+        let mut cpu = NES::mock();
+        cpu.set_mem(0x31, 0b1001_0110);
+        cpu.set_a(0b1000_0101);
+        LD(A).execute(&mut cpu, 0x31);
+        assert_eq!(cpu.get_a(), 0b1001_0110);
     }
 
     #[test]
     fn test_ld_z() {
-        let mut cpu = CPU::mock();
-        cpu.memory.set(0x4304, 0b1001_0110);
-        cpu.registers.x = 0b1000_0101;
-        cpu.registers.clear_flag(Flag::Z);
-        let cpu = Rc::new(RefCell::new(cpu));
-        LD(X).execute(&cpu, 0x4304);
-        assert_eq!(cpu.borrow().registers.is_flag_set(Flag::Z), false);
-        cpu.borrow_mut().memory.set(0x4304, 0);
-        LD(X).execute(&cpu, 0x4304);
-        assert_eq!(cpu.borrow().registers.is_flag_set(Flag::Z), true);
+        let mut cpu = NES::mock();
+        cpu.set_mem(0x31, 0b1001_0110);
+        cpu.set_x(0b1000_0101);
+        cpu.clear_flag(Flag::Z);
+        LD(X).execute(&mut cpu, 0x31);
+        assert_eq!(cpu.is_flag_set(Flag::Z), false);
+        cpu.set_mem(0x31, 0);
+        LD(X).execute(&mut cpu, 0x31);
+        assert_eq!(cpu.is_flag_set(Flag::Z), true);
     }
 
     #[test]
     fn test_ld_n() {
-        let mut cpu = CPU::mock();
-        cpu.memory.set(0x4304, 0b0101_0110);
-        cpu.registers.y = 0b1000_0101;
-        cpu.registers.clear_flag(Flag::N);
-        let cpu = Rc::new(RefCell::new(cpu));
-        LD(Y).execute(&cpu, 0x4304);
-        assert_eq!(cpu.borrow().registers.is_flag_set(Flag::N), false);
-        cpu.borrow_mut().registers.a = 0b1001_0010;
-        cpu.borrow_mut().memory.set(0x4304, 0b1011_0001);
-        LD(Y).execute(&cpu, 0x4304);
-        assert_eq!(cpu.borrow().registers.is_flag_set(Flag::N), true);
+        let mut cpu = NES::mock();
+        cpu.set_mem(0x31, 0b0101_0110);
+        cpu.set_y(0b1000_0101);
+        cpu.clear_flag(Flag::N);
+        LD(Y).execute(&mut cpu, 0x31);
+        assert_eq!(cpu.is_flag_set(Flag::N), false);
+        cpu.set_a(0b1001_0010);
+        cpu.set_mem(0x31, 0b1011_0001);
+        LD(Y).execute(&mut cpu, 0x31);
+        assert_eq!(cpu.is_flag_set(Flag::N), true);
     }
 }

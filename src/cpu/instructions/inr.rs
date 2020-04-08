@@ -1,8 +1,7 @@
 use super::{Implied, Instruction, InstructionName};
 use crate::bitops::BitOps;
-use crate::cpu::state::CPU;
+use crate::state::CPU;
 use crate::cpu::variables::{Flag, Get, Set};
-use std::{cell::RefCell, rc::Rc};
 
 /// Represents the 'increment register' instructions
 /// (http://www.obelisk.me.uk/6502/reference.html#INX)
@@ -16,15 +15,15 @@ impl<T: Get + Set> Instruction for IN<T> {
     }
 }
 
-impl<T: Get + Set> Implied for IN<T> {
-    fn execute(&self, cpu: &Rc<RefCell<CPU>>) {
+impl<T: Get + Set, S: CPU> Implied<S> for IN<T> {
+    fn execute(&self, cpu: &mut S) {
         let result: u8 = self.0.get(cpu).wrapping_add(1);
         self.0.set(cpu, result);
         if result == 0 {
-            cpu.borrow_mut().registers.set_flag(Flag::Z);
+            cpu.set_flag(Flag::Z);
         }
         if result.is_bit_set(7) {
-            cpu.borrow_mut().registers.set_flag(Flag::N);
+            cpu.set_flag(Flag::N);
         }
     }
 }
@@ -33,39 +32,38 @@ impl<T: Get + Set> Implied for IN<T> {
 mod tests {
     use super::*;
     use crate::cpu::variables::{x_register::X, y_register::Y};
+    use crate::state::NES;
+    use crate::state::cpu::Registers;
 
     #[test]
     fn test_in() {
-        let mut cpu = CPU::mock();
-        cpu.registers.x = 100;
-        let cpu = Rc::new(RefCell::new(cpu));
-        IN(X).execute(&cpu);
-        assert_eq!(cpu.borrow().registers.x, 101);
+        let mut cpu = NES::mock();
+        cpu.set_x(100);
+        IN(X).execute(&mut cpu);
+        assert_eq!(cpu.get_x(), 101);
     }
 
     #[test]
     fn test_in_z() {
-        let mut cpu = CPU::mock();
-        cpu.registers.clear_flag(Flag::Z);
-        cpu.registers.y = 100;
-        let cpu = Rc::new(RefCell::new(cpu));
-        IN(Y).execute(&cpu);
-        assert_eq!(cpu.borrow().registers.is_flag_set(Flag::Z), false);
-        cpu.borrow_mut().registers.y = 255;
-        IN(Y).execute(&cpu);
-        assert_eq!(cpu.borrow().registers.is_flag_set(Flag::Z), true);
+        let mut cpu = NES::mock();
+        cpu.clear_flag(Flag::Z);
+        cpu.set_y(100);
+        IN(Y).execute(&mut cpu);
+        assert_eq!(cpu.is_flag_set(Flag::Z), false);
+        cpu.set_y(255);
+        IN(Y).execute(&mut cpu);
+        assert_eq!(cpu.is_flag_set(Flag::Z), true);
     }
 
     #[test]
     fn test_in_n() {
-        let mut cpu = CPU::mock();
-        cpu.registers.clear_flag(Flag::N);
-        cpu.registers.x = 100;
-        let cpu = Rc::new(RefCell::new(cpu));
-        IN(X).execute(&cpu);
-        assert_eq!(cpu.borrow().registers.is_flag_set(Flag::N), false);
-        cpu.borrow_mut().registers.x = 235;
-        IN(X).execute(&cpu);
-        assert_eq!(cpu.borrow().registers.is_flag_set(Flag::N), true);
+        let mut cpu = NES::mock();
+        cpu.clear_flag(Flag::N);
+        cpu.set_x(100);
+        IN(X).execute(&mut cpu);
+        assert_eq!(cpu.is_flag_set(Flag::N), false);
+        cpu.set_x(235);
+        IN(X).execute(&mut cpu);
+        assert_eq!(cpu.is_flag_set(Flag::N), true);
     }
 }

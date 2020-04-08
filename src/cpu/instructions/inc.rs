@@ -1,9 +1,7 @@
 use super::{Instruction, InstructionName, Modify};
-use crate::address::AddressMap;
 use crate::bitops::BitOps;
-use crate::cpu::state::CPU;
+use crate::state::CPU;
 use crate::cpu::variables::Flag;
-use std::{cell::RefCell, rc::Rc};
 
 /// Represents the INC instruction (http://www.obelisk.me.uk/6502/reference.html#INC)
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -15,15 +13,15 @@ impl Instruction for INC {
     }
 }
 
-impl Modify for INC {
-    fn execute(&self, cpu: &Rc<RefCell<CPU>>, addr: u16, old_val: u8) {
+impl<S: CPU> Modify<S> for INC {
+    fn execute(&self, cpu: &mut S, addr: u16, old_val: u8) {
         let result: u8 = old_val.wrapping_add(1);
-        cpu.borrow_mut().memory.set(addr, result);
+        cpu.set_mem(addr, result);
         if result == 0 {
-            cpu.borrow_mut().registers.set_flag(Flag::Z);
+            cpu.set_flag(Flag::Z);
         }
         if result.is_bit_set(7) {
-            cpu.borrow_mut().registers.set_flag(Flag::N);
+            cpu.set_flag(Flag::N);
         }
     }
 }
@@ -31,39 +29,38 @@ impl Modify for INC {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::state::NES;
+    use crate::state::cpu::{Registers, Memory};
 
     #[test]
     fn test_inc() {
-        let mut cpu = CPU::mock();
-        cpu.memory.set(0x3209, 100);
-        let cpu = Rc::new(RefCell::new(cpu));
-        INC.execute(&cpu, 0x3209, 100);
-        assert_eq!(cpu.borrow().memory.get(0x3209), 101);
+        let mut cpu = NES::mock();
+        cpu.set_mem(0x3209, 100);
+        INC.execute(&mut cpu, 0x3209, 100);
+        assert_eq!(cpu.get_mem(0x3209), 101);
     }
 
     #[test]
     fn test_inc_z() {
-        let mut cpu = CPU::mock();
-        cpu.registers.clear_flag(Flag::Z);
-        cpu.memory.set(0x3209, 100);
-        let cpu = Rc::new(RefCell::new(cpu));
-        INC.execute(&cpu, 0x3209, 100);
-        assert_eq!(cpu.borrow().registers.is_flag_set(Flag::Z), false);
-        cpu.borrow_mut().memory.set(0x3209, 255);
-        INC.execute(&cpu, 0x3209, 255);
-        assert_eq!(cpu.borrow().registers.is_flag_set(Flag::Z), true);
+        let mut cpu = NES::mock();
+        cpu.clear_flag(Flag::Z);
+        cpu.set_mem(0x3209, 100);
+        INC.execute(&mut cpu, 0x3209, 100);
+        assert_eq!(cpu.is_flag_set(Flag::Z), false);
+        cpu.set_mem(0x3209, 255);
+        INC.execute(&mut cpu, 0x3209, 255);
+        assert_eq!(cpu.is_flag_set(Flag::Z), true);
     }
 
     #[test]
     fn test_inc_n() {
-        let mut cpu = CPU::mock();
-        cpu.registers.clear_flag(Flag::N);
-        cpu.memory.set(0x3209, 100);
-        let cpu = Rc::new(RefCell::new(cpu));
-        INC.execute(&cpu, 0x3209, 100);
-        assert_eq!(cpu.borrow().registers.is_flag_set(Flag::N), false);
-        cpu.borrow_mut().memory.set(0x3209, 204);
-        INC.execute(&cpu, 0x3209, 204);
-        assert_eq!(cpu.borrow().registers.is_flag_set(Flag::N), true);
+        let mut cpu = NES::mock();
+        cpu.clear_flag(Flag::N);
+        cpu.set_mem(0x3209, 100);
+        INC.execute(&mut cpu, 0x3209, 100);
+        assert_eq!(cpu.is_flag_set(Flag::N), false);
+        cpu.set_mem(0x3209, 204);
+        INC.execute(&mut cpu, 0x3209, 204);
+        assert_eq!(cpu.is_flag_set(Flag::N), true);
     }
 }

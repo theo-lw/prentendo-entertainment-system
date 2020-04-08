@@ -1,7 +1,6 @@
 use super::{Implied, Instruction, InstructionName};
-use crate::cpu::state::CPU;
+use crate::state::CPU;
 use crate::cpu::variables::Flag;
-use std::{cell::RefCell, rc::Rc};
 
 /// Represents the 'clear' instructions
 /// (http://www.obelisk.me.uk/6502/reference.html#CLC)
@@ -17,25 +16,26 @@ impl Instruction for CL {
     }
 }
 
-impl Implied for CL {
-    fn execute(&self, cpu: &Rc<RefCell<CPU>>) {
-        cpu.borrow_mut().registers.clear_flag(self.0);
+impl<S: CPU> Implied<S> for CL {
+    fn execute(&self, cpu: &mut S) {
+        cpu.clear_flag(self.0);
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::state::NES;
+    use crate::state::cpu::Registers;
 
     #[test]
     fn test_clc() {
-        let mut cpu = CPU::mock();
-        cpu.registers.clear_flag(Flag::C);
-        let cpu = Rc::new(RefCell::new(cpu));
-        CL(Flag::C).execute(&cpu);
-        assert_eq!(cpu.borrow().registers.is_flag_set(Flag::C), false);
-        cpu.borrow_mut().registers.set_flag(Flag::Z);
-        CL(Flag::Z).execute(&cpu);
-        assert_eq!(cpu.borrow().registers.is_flag_set(Flag::C), false);
+        let mut cpu = NES::mock();
+        cpu.clear_flag(Flag::C);
+        CL(Flag::C).execute(&mut cpu);
+        assert_eq!(cpu.is_flag_set(Flag::C), false);
+        cpu.set_flag(Flag::Z);
+        CL(Flag::Z).execute(&mut cpu);
+        assert_eq!(cpu.is_flag_set(Flag::C), false);
     }
 }

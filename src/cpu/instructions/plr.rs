@@ -1,8 +1,7 @@
 use super::{Instruction, InstructionName, PullStack};
 use crate::bitops::BitOps;
-use crate::cpu::state::CPU;
+use crate::state::CPU;
 use crate::cpu::variables::{Flag, Set};
-use std::{cell::RefCell, rc::Rc};
 
 /// Represents the 'pull stack' instructions
 /// (http://www.obelisk.me.uk/6502/reference.html#PLA)
@@ -16,13 +15,13 @@ impl<T: Set> Instruction for PL<T> {
     }
 }
 
-impl<T: Set> PullStack for PL<T> {
-    fn set(&self, cpu: &Rc<RefCell<CPU>>, val: u8) {
+impl<T: Set, S: CPU> PullStack<S> for PL<T> {
+    fn set(&self, cpu: &mut S, val: u8) {
         if val == 0 {
-            cpu.borrow_mut().registers.set_flag(Flag::Z);
+            cpu.set_flag(Flag::Z);
         }
         if val.is_bit_set(7) {
-            cpu.borrow_mut().registers.set_flag(Flag::N);
+            cpu.set_flag(Flag::N);
         }
         self.0.set(cpu, val);
     }
@@ -32,35 +31,34 @@ impl<T: Set> PullStack for PL<T> {
 mod tests {
     use super::*;
     use crate::cpu::variables::{a_register::A, p_register::P};
+    use crate::state::NES;
+    use crate::state::cpu::Registers;
 
     #[test]
     fn test_plp() {
-        let mut cpu = CPU::mock();
-        cpu.registers.p = 0;
-        let cpu = Rc::new(RefCell::new(cpu));
-        PL(P).set(&cpu, 0b0101_1110);
-        assert_eq!(cpu.borrow().registers.p, 0b0101_1110);
+        let mut cpu = NES::mock();
+        cpu.set_p(0);
+        PL(P).set(&mut cpu, 0b0101_1110);
+        assert_eq!(cpu.get_p(), 0b0101_1110);
     }
 
     #[test]
     fn test_pla_z() {
-        let mut cpu = CPU::mock();
-        cpu.registers.clear_flag(Flag::Z);
-        let cpu = Rc::new(RefCell::new(cpu));
-        PL(A).set(&cpu, 12);
-        assert_eq!(cpu.borrow().registers.is_flag_set(Flag::Z), false);
-        PL(A).set(&cpu, 0);
-        assert_eq!(cpu.borrow().registers.is_flag_set(Flag::Z), true);
+        let mut cpu = NES::mock();
+        cpu.clear_flag(Flag::Z);
+        PL(A).set(&mut cpu, 12);
+        assert_eq!(cpu.is_flag_set(Flag::Z), false);
+        PL(A).set(&mut cpu, 0);
+        assert_eq!(cpu.is_flag_set(Flag::Z), true);
     }
 
     #[test]
     fn test_pl_n() {
-        let mut cpu = CPU::mock();
-        cpu.registers.clear_flag(Flag::N);
-        let cpu = Rc::new(RefCell::new(cpu));
-        PL(A).set(&cpu, 0);
-        assert_eq!(cpu.borrow().registers.is_flag_set(Flag::N), false);
-        PL(A).set(&cpu, 0b1100_0010);
-        assert_eq!(cpu.borrow().registers.is_flag_set(Flag::N), true);
+        let mut cpu = NES::mock();
+        cpu.clear_flag(Flag::N);
+        PL(A).set(&mut cpu, 0);
+        assert_eq!(cpu.is_flag_set(Flag::N), false);
+        PL(A).set(&mut cpu, 0b1100_0010);
+        assert_eq!(cpu.is_flag_set(Flag::N), true);
     }
 }

@@ -1,7 +1,6 @@
 use super::{Branch, Instruction, InstructionName};
-use crate::cpu::state::CPU;
+use crate::state::CPU;
 use crate::cpu::variables::Flag;
-use std::{cell::RefCell, rc::Rc};
 
 /// Represents the 'branch if set' instructions
 /// (http://www.obelisk.me.uk/6502/reference.html#BCS)
@@ -17,23 +16,24 @@ impl Instruction for BS {
     }
 }
 
-impl Branch for BS {
-    fn should_branch(&self, cpu: &Rc<RefCell<CPU>>) -> bool {
-        cpu.borrow().registers.is_flag_set(self.0)
+impl<S: CPU> Branch<S> for BS {
+    fn should_branch(&self, cpu: &S) -> bool {
+        cpu.is_flag_set(self.0)
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::state::NES;
+    use crate::state::cpu::Registers;
 
     #[test]
     fn test_bs() {
-        let mut cpu = CPU::mock();
-        cpu.registers.clear_flag(Flag::C);
-        let cpu = Rc::new(RefCell::new(cpu));
-        assert_eq!(BS(Flag::C).should_branch(&cpu), false);
-        cpu.borrow_mut().registers.set_flag(Flag::C);
-        assert_eq!(BS(Flag::C).should_branch(&cpu), true);
+        let mut cpu = NES::mock();
+        cpu.clear_flag(Flag::C);
+        assert_eq!(BS(Flag::C).should_branch(&mut cpu), false);
+        cpu.set_flag(Flag::C);
+        assert_eq!(BS(Flag::C).should_branch(&mut cpu), true);
     }
 }

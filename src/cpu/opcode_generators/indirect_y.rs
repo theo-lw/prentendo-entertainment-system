@@ -1,16 +1,15 @@
 use crate::{
-    address::AddressMap,
     cpu::{
         instructions::{Modify, Read, Write},
         opcode_generators::{AddressingMode, CPUCycle},
-        state::CPU,
     },
+    state::CPU,
 };
-use std::{cell::RefCell, ops::Generator, pin::Pin, rc::Rc};
+use std::{cell::RefCell, ops::Generator, pin::Pin};
 
 /// Creates the opcode for 'Read' instructions with indirect Y addressing
-pub fn read<'a, T: Read + 'a>(
-    cpu: &'a Rc<RefCell<CPU>>,
+pub fn read<'a, T: Read<S> + 'a, S: CPU>(
+    cpu: &'a RefCell<S>,
     instruction: T,
 ) -> Pin<Box<dyn Generator<Yield = CPUCycle, Return = CPUCycle> + 'a>> {
     Box::pin(move || {
@@ -24,11 +23,11 @@ pub fn read<'a, T: Read + 'a>(
         let pointer: u16 = u16::from_be_bytes([0, cpu.borrow_mut().get_and_increment_pc()]);
         yield cycle;
         cycle.next();
-        let low_byte: u8 = cpu.borrow().memory.get(pointer);
+        let low_byte: u8 = cpu.borrow().get_mem(pointer);
         yield cycle;
         cycle.next();
-        let mut high_byte: u8 = cpu.borrow().memory.get(pointer.wrapping_add(1));
-        let (low_byte, overflow): (u8, bool) = low_byte.overflowing_add(cpu.borrow().registers.y);
+        let mut high_byte: u8 = cpu.borrow().get_mem(pointer.wrapping_add(1));
+        let (low_byte, overflow): (u8, bool) = low_byte.overflowing_add(cpu.borrow().get_y());
         yield cycle;
         cycle.next();
         if overflow {
@@ -36,14 +35,17 @@ pub fn read<'a, T: Read + 'a>(
             yield cycle;
             cycle.next();
         }
-        instruction.execute(cpu, u16::from_be_bytes([high_byte, low_byte]));
+        instruction.execute(
+            &mut cpu.borrow_mut(),
+            u16::from_be_bytes([high_byte, low_byte]),
+        );
         cycle
     })
 }
 
 /// Creates the opcode for 'Write' instructions with indirect Y addressing
-pub fn write<'a, T: Write + 'a>(
-    cpu: &'a Rc<RefCell<CPU>>,
+pub fn write<'a, T: Write<S> + 'a, S: CPU>(
+    cpu: &'a RefCell<S>,
     instruction: T,
 ) -> Pin<Box<dyn Generator<Yield = CPUCycle, Return = CPUCycle> + 'a>> {
     Box::pin(move || {
@@ -57,11 +59,11 @@ pub fn write<'a, T: Write + 'a>(
         let pointer: u16 = u16::from_be_bytes([0, cpu.borrow_mut().get_and_increment_pc()]);
         yield cycle;
         cycle.next();
-        let low_byte: u8 = cpu.borrow().memory.get(pointer);
+        let low_byte: u8 = cpu.borrow().get_mem(pointer);
         yield cycle;
         cycle.next();
-        let mut high_byte: u8 = cpu.borrow().memory.get(pointer.wrapping_add(1));
-        let (low_byte, overflow) = low_byte.overflowing_add(cpu.borrow().registers.y);
+        let mut high_byte: u8 = cpu.borrow().get_mem(pointer.wrapping_add(1));
+        let (low_byte, overflow) = low_byte.overflowing_add(cpu.borrow().get_y());
         yield cycle;
         cycle.next();
         if overflow {
@@ -69,14 +71,17 @@ pub fn write<'a, T: Write + 'a>(
         }
         yield cycle;
         cycle.next();
-        instruction.execute(cpu, u16::from_be_bytes([high_byte, low_byte]));
+        instruction.execute(
+            &mut cpu.borrow_mut(),
+            u16::from_be_bytes([high_byte, low_byte]),
+        );
         cycle
     })
 }
 
 /// Creates the opcode for 'Modify' instructions with indirect Y addressing
-pub fn modify<'a, T: Modify + 'a>(
-    cpu: &'a Rc<RefCell<CPU>>,
+pub fn modify<'a, T: Modify<S> + 'a, S: CPU>(
+    cpu: &'a RefCell<S>,
     instruction: T,
 ) -> Pin<Box<dyn Generator<Yield = CPUCycle, Return = CPUCycle> + 'a>> {
     Box::pin(move || {
@@ -90,11 +95,11 @@ pub fn modify<'a, T: Modify + 'a>(
         let pointer: u16 = u16::from_be_bytes([0, cpu.borrow_mut().get_and_increment_pc()]);
         yield cycle;
         cycle.next();
-        let low_byte: u8 = cpu.borrow().memory.get(pointer);
+        let low_byte: u8 = cpu.borrow().get_mem(pointer);
         yield cycle;
         cycle.next();
-        let mut high_byte: u8 = cpu.borrow().memory.get(pointer.wrapping_add(1));
-        let (low_byte, overflow): (u8, bool) = low_byte.overflowing_add(cpu.borrow().registers.y);
+        let mut high_byte: u8 = cpu.borrow().get_mem(pointer.wrapping_add(1));
+        let (low_byte, overflow): (u8, bool) = low_byte.overflowing_add(cpu.borrow().get_y());
         yield cycle;
         cycle.next();
         if overflow {
@@ -103,13 +108,13 @@ pub fn modify<'a, T: Modify + 'a>(
         yield cycle;
         cycle.next();
         let addr = u16::from_be_bytes([high_byte, low_byte]);
-        let val: u8 = cpu.borrow().memory.get(addr);
+        let val: u8 = cpu.borrow().get_mem(addr);
         yield cycle;
         cycle.next();
-        cpu.borrow_mut().memory.set(addr, val);
+        cpu.borrow_mut().set_mem(addr, val);
         yield cycle;
         cycle.next();
-        instruction.execute(cpu, addr, val);
+        instruction.execute(&mut cpu.borrow_mut(), addr, val);
         cycle
     })
 }
@@ -120,18 +125,20 @@ mod tests {
     use crate::cpu::instructions::{adc::ADC, asl::ASL, str::ST, Instruction};
     use crate::cpu::variables::a_register::A;
     use std::ops::GeneratorState;
+    use crate::state::NES;
+    use crate::state::cpu::{Registers, Memory};
 
     #[test]
     fn test_read() {
-        let mut cpu = CPU::mock();
-        cpu.registers.y = 2;
-        cpu.registers.pc = 0;
-        cpu.memory.set(cpu.registers.pc, 0x20);
-        cpu.memory.set(0x20, 0x44);
-        cpu.memory.set(0x21, 0x11);
-        cpu.memory.set(0x1146, 43);
-        cpu.registers.a = 120;
-        let cpu = Rc::new(RefCell::new(cpu));
+        let mut cpu = NES::mock();
+        cpu.set_y(2);
+        cpu.set_pc(0);
+        cpu.set_mem(cpu.get_pc(), 0x20);
+        cpu.set_mem(0x20, 0x44);
+        cpu.set_mem(0x21, 0x11);
+        cpu.set_mem(0x1146, 43);
+        cpu.set_a(120);
+        let cpu = RefCell::new(cpu);
         let instruction = ADC;
         let mut opcode = read(&cpu, instruction);
         let mut cycle = CPUCycle {
@@ -142,25 +149,25 @@ mod tests {
         for _ in 0..4 {
             let state = opcode.as_mut().resume(());
             assert_eq!(state, GeneratorState::Yielded(cycle));
-            assert_eq!(cpu.borrow().registers.a, 120);
+            assert_eq!(cpu.borrow().get_a(), 120);
             cycle.next();
         }
         let state = opcode.as_mut().resume(());
         assert_eq!(state, GeneratorState::Complete(cycle));
-        assert_eq!(cpu.borrow().registers.a, 163);
-        assert_eq!(cpu.borrow().registers.pc, 1);
+        assert_eq!(cpu.borrow().get_a(), 163);
+        assert_eq!(cpu.borrow().get_pc(), 1);
     }
 
     #[test]
     fn test_modify() {
-        let mut cpu = CPU::mock();
-        cpu.registers.y = 3;
-        cpu.registers.pc = 0;
-        cpu.memory.set(cpu.registers.pc, 0x23);
-        cpu.memory.set(0x23, 0x26);
-        cpu.memory.set(0x24, 0x44);
-        cpu.memory.set(0x4429, 0b0100_0101);
-        let cpu = Rc::new(RefCell::new(cpu));
+        let mut cpu = NES::mock();
+        cpu.set_y(3);
+        cpu.set_pc(0);
+        cpu.set_mem(cpu.get_pc(), 0x23);
+        cpu.set_mem(0x23, 0x26);
+        cpu.set_mem(0x24, 0x09);
+        cpu.set_mem(0x0929, 0b0100_0101);
+        let cpu = RefCell::new(cpu);
         let instruction = ASL;
         let mut opcode = modify(&cpu, instruction);
         let mut cycle = CPUCycle {
@@ -171,26 +178,26 @@ mod tests {
         for _ in 0..7 {
             let state = opcode.as_mut().resume(());
             assert_eq!(state, GeneratorState::Yielded(cycle));
-            assert_eq!(cpu.borrow().memory.get(0x4429), 0b0100_0101);
+            assert_eq!(cpu.borrow().get_mem(0x0929), 0b0100_0101);
             cycle.next();
         }
         let state = opcode.as_mut().resume(());
         assert_eq!(state, GeneratorState::Complete(cycle));
-        assert_eq!(cpu.borrow().memory.get(0x4429), 0b1000_1010);
-        assert_eq!(cpu.borrow().registers.pc, 1);
+        assert_eq!(cpu.borrow().get_mem(0x0929), 0b1000_1010);
+        assert_eq!(cpu.borrow().get_pc(), 1);
     }
 
     #[test]
     fn test_write() {
-        let mut cpu = CPU::mock();
-        cpu.registers.a = 43;
-        cpu.registers.y = 4;
-        cpu.registers.pc = 0;
-        cpu.memory.set(cpu.registers.pc, 0x10);
-        cpu.memory.set(0x10, 0x20);
-        cpu.memory.set(0x11, 0x40);
-        cpu.memory.set(0x4024, 0);
-        let cpu = Rc::new(RefCell::new(cpu));
+        let mut cpu = NES::mock();
+        cpu.set_a(43);
+        cpu.set_pc(0);
+        cpu.set_y(4);
+        cpu.set_mem(cpu.get_pc(), 0x10);
+        cpu.set_mem(0x10, 0x20);
+        cpu.set_mem(0x11, 0x03);
+        cpu.set_mem(0x0324, 0);
+        let cpu = RefCell::new(cpu);
         let instruction = ST(A);
         let mut opcode = write(&cpu, instruction);
         let mut cycle = CPUCycle {
@@ -201,12 +208,12 @@ mod tests {
         for _ in 0..5 {
             let state = opcode.as_mut().resume(());
             assert_eq!(state, GeneratorState::Yielded(cycle));
-            assert_eq!(cpu.borrow().memory.get(0x4024), 0);
+            assert_eq!(cpu.borrow().get_mem(0x0324), 0);
             cycle.next();
         }
         let state = opcode.as_mut().resume(());
         assert_eq!(state, GeneratorState::Complete(cycle));
-        assert_eq!(cpu.borrow().memory.get(0x4024), 43);
-        assert_eq!(cpu.borrow().registers.pc, 1);
+        assert_eq!(cpu.borrow().get_mem(0x0324), 43);
+        assert_eq!(cpu.borrow().get_pc(), 1);
     }
 }

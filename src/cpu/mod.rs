@@ -1,6 +1,5 @@
 pub mod instructions;
 pub mod opcode_generators;
-pub mod state;
 pub mod variables;
 
 use instructions::{
@@ -12,12 +11,11 @@ use opcode_generators::{
     absolute, absolute_x, absolute_y, immediate, implied, indirect, indirect_x, indirect_y,
     relative, zero, zero_x, zero_y, CPUCycle,
 };
-use state::CPU;
+use crate::state::CPU;
 use std::{
     cell::RefCell,
     ops::{Generator, GeneratorState},
     pin::Pin,
-    rc::Rc,
 };
 use variables::{
     a_register::A, p_register::P, stack_pointer::S, x_register::X, y_register::Y, Flag,
@@ -45,7 +43,7 @@ use variables::{
 /// decouple instructions from the data they act on.
 
 /// Executes a CPU cycle
-pub fn cycle<'a, T: Instruction>(cpu: &'a Rc<RefCell<CPU>>) -> impl Generator + 'a {
+pub fn cycle<'a, T: Instruction, S: CPU>(cpu: &'a RefCell<S>) -> impl Generator + 'a {
     move || loop {
         let mut instruction = get_instruction(cpu);
         'opcode: loop {
@@ -63,8 +61,8 @@ pub fn cycle<'a, T: Instruction>(cpu: &'a Rc<RefCell<CPU>>) -> impl Generator + 
 }
 
 /// Returns the next instruction
-fn get_instruction<'a>(
-    cpu: &'a Rc<RefCell<CPU>>,
+fn get_instruction<'a, S: CPU>(
+    cpu: &'a RefCell<S>,
 ) -> Pin<Box<dyn Generator<Yield = CPUCycle, Return = CPUCycle> + 'a>> {
     let opcode: u8 = cpu.borrow_mut().get_and_increment_pc();
     match opcode {

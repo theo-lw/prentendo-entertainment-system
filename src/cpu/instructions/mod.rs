@@ -24,9 +24,9 @@ pub mod sef;
 pub mod str;
 pub mod trr;
 
-use crate::cpu::state::CPU;
+use crate::state::CPU;
 use crate::cpu::variables::{Flag, RegisterName};
-use std::{cell::RefCell, fmt::Debug, rc::Rc};
+use std::fmt::Debug;
 
 /// This module contains instruction-related code. I have categorized instructions into the
 /// following traits:
@@ -39,45 +39,45 @@ pub trait Instruction {
 
 /// A trait implemented by 'Read' instructions.
 /// The `execute` method should execute the instruction.
-pub trait Read: Instruction {
-    fn execute(&self, cpu: &Rc<RefCell<CPU>>, addr: u16);
+pub trait Read<T: CPU>: Instruction {
+    fn execute(&self, cpu: &mut T, addr: u16);
 }
 
 /// A trait implemnted by 'Write' instructions.
 /// The `execute` method should execute the instruction.
-pub trait Write: Instruction {
-    fn execute(&self, cpu: &Rc<RefCell<CPU>>, addr: u16);
+pub trait Write<T: CPU>: Instruction {
+    fn execute(&self, cpu: &mut T, addr: u16);
 }
 
 /// A trait implemented by 'Modify' instructions.
 /// The `execute` method should execute the instruction.
-pub trait Modify: Instruction {
-    fn execute(&self, cpu: &Rc<RefCell<CPU>>, addr: u16, old_val: u8);
+pub trait Modify<T: CPU>: Instruction {
+    fn execute(&self, cpu: &mut T, addr: u16, old_val: u8);
 }
 
 /// A trait implemented by miscellaneous instructions with Implied/Accumulator addressing.
 /// The `execute` method should execute the instruction.
-pub trait Implied: Instruction {
-    fn execute(&self, cpu: &Rc<RefCell<CPU>>);
+pub trait Implied<T: CPU>: Instruction {
+    fn execute(&self, cpu: &mut T);
 }
 
 /// A trait implmented by instructions that push a value to the stack.
 /// The `get` method should return the value to be pushed to the stack.
-pub trait PushStack: Instruction {
-    fn get(&self, cpu: &Rc<RefCell<CPU>>) -> u8;
+pub trait PushStack<T: CPU>: Instruction {
+    fn get(&self, cpu: &T) -> u8;
 }
 
 /// A trait implemented by instructions that pull values from the stack.
 /// The `set` method takes in an argument `val` that holds the value pulled from the stack.
 /// It should use that argument to set a register accordingly.
-pub trait PullStack: Instruction {
-    fn set(&self, cpu: &Rc<RefCell<CPU>>, val: u8);
+pub trait PullStack<T: CPU>: Instruction {
+    fn set(&self, cpu: &mut T, val: u8);
 }
 
 /// A trait implemnted by branching instructions.
 /// The `should_branch` method should return `true` if a branch should occur and `false` otherwise.
-pub trait Branch: Instruction {
-    fn should_branch(&self, cpu: &Rc<RefCell<CPU>>) -> bool;
+pub trait Branch<T: CPU>: Instruction {
+    fn should_branch(&self, cpu: &T) -> bool;
 }
 
 /// An enum holding instruction names

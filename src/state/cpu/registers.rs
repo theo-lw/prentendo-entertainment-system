@@ -1,3 +1,80 @@
+use super::Registers;
+use crate::state::NES;
+use crate::bitops::BitOps;
+use crate::cpu::variables::Flag;
+
+impl Registers for NES {
+    fn get_a(&self) -> u8 {
+        self.cpu.a
+    }
+    fn get_x(&self) -> u8 {
+        self.cpu.x
+    }
+    fn get_y(&self) -> u8 {
+        self.cpu.y
+    }
+    fn get_pc(&self) -> u16 {
+        self.cpu.pc
+    }
+    fn get_pch(&self) -> u8 {
+        self.cpu.pc.to_be_bytes()[0]
+    }
+    fn get_pcl(&self) -> u8 {
+        self.cpu.pc.to_be_bytes()[1]
+    }
+    fn get_s(&self) -> u8 {
+        self.cpu.s
+    } 
+    fn get_p(&self) -> u8 {
+        self.cpu.p
+    }
+    fn set_a(&mut self, val: u8) {
+        self.cpu.a = val;
+    }
+    fn set_x(&mut self, val: u8) {
+        self.cpu.x = val;
+    }
+    fn set_y(&mut self, val: u8) {
+        self.cpu.y = val;
+    }
+    fn set_pch(&mut self, val: u8) {
+        let [_, pcl] = self.cpu.pc.to_be_bytes();
+        self.cpu.pc = u16::from_be_bytes([val, pcl]);
+    }
+    fn set_pcl(&mut self, val: u8) {
+        let [pch, _] = self.cpu.pc.to_be_bytes();
+        self.cpu.pc = u16::from_be_bytes([pch, val]);
+    }
+    fn set_pc(&mut self, val: u16) {
+        self.cpu.pc = val;
+    }
+    fn set_s(&mut self, val: u8) {
+        self.cpu.s = val;
+    }
+    fn set_p(&mut self, val: u8) {
+        self.cpu.p = val;
+    }
+    fn increment_pc(&mut self) {
+        self.cpu.pc = self.cpu.pc.wrapping_add(1);
+    }
+
+    /// Sets the given flag
+    fn set_flag(&mut self, flag: Flag) {
+        self.cpu.p.set_bit(flag as usize);
+    }
+
+    /// Clears the given flag
+    fn clear_flag(&mut self, flag: Flag) {
+        self.cpu.p.clear_bit(flag as usize);
+    }
+
+    /// Returns whether the flag is set or not
+    fn is_flag_set(&self, flag: Flag) -> bool {
+        self.cpu.p.is_bit_set(flag as usize)
+    }
+}
+
+/*
 use crate::bitops::BitOps;
 use crate::cpu::variables::Flag;
 
@@ -71,7 +148,7 @@ impl Default for Registers {
             y: 0,
             pc: 0,
             s: 0,
-            p: 0b0010_0000,
+            p: 0b0011_0000,
         }
     }
 }
@@ -147,3 +224,4 @@ mod tests {
         assert_eq!(registers.pc, 0x4031);
     }
 }
+*/

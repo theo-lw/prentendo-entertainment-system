@@ -1,7 +1,5 @@
 use super::{Get, Register, RegisterName, Set};
-use crate::cpu::state::CPU;
-use std::cell::RefCell;
-use std::rc::Rc;
+use crate::state::CPU;
 
 /// Represents the Y register
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -14,35 +12,35 @@ impl Register for Y {
 }
 
 impl Get for Y {
-    fn get(&self, cpu: &Rc<RefCell<CPU>>) -> u8 {
-        cpu.borrow().registers.y
+    fn get(&self, cpu: &dyn CPU) -> u8 {
+        cpu.get_y()
     }
 }
 
 impl Set for Y {
-    fn set(&self, cpu: &Rc<RefCell<CPU>>, val: u8) {
-        cpu.borrow_mut().registers.y = val;
+    fn set(&self, cpu: &mut dyn CPU, val: u8) {
+        cpu.set_y(val);
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::state::NES;
+    use crate::state::cpu::Registers;
 
     #[test]
     fn test_get() {
-        let mut cpu = CPU::mock();
-        cpu.registers.y = 23;
-        let cpu = Rc::new(RefCell::new(cpu));
+        let mut cpu = NES::mock();
+        cpu.set_y(23);
         assert_eq!(Y.get(&cpu), 23);
     }
 
     #[test]
     fn test_set() {
-        let mut cpu = CPU::mock();
-        cpu.registers.y = 40;
-        let cpu = Rc::new(RefCell::new(cpu));
-        Y.set(&cpu, 94);
-        assert_eq!(cpu.borrow().registers.y, 94);
+        let mut cpu = NES::mock();
+        cpu.set_y(40);
+        Y.set(&mut cpu, 94);
+        assert_eq!(cpu.get_y(), 94);
     }
 }
