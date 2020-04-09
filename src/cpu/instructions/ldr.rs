@@ -1,7 +1,7 @@
 use super::{Instruction, InstructionName, Read};
 use crate::bitops::BitOps;
-use crate::state::CPU;
 use crate::cpu::variables::{Flag, Set};
+use crate::state::CPU;
 
 /// Represents the LD instructions
 /// (http://www.obelisk.me.uk/6502/reference.html#LDA)
@@ -20,12 +20,8 @@ impl<T: Set, S: CPU> Read<S> for LD<T> {
     fn execute(&self, cpu: &mut S, addr: u16) {
         let byte: u8 = cpu.get_mem(addr);
         self.0.set(cpu, byte);
-        if byte == 0 {
-            cpu.set_flag(Flag::Z);
-        }
-        if byte.is_bit_set(7) {
-            cpu.set_flag(Flag::N);
-        }
+        cpu.assign_flag(Flag::Z, byte == 0);
+        cpu.assign_flag(Flag::N, byte.is_bit_set(7));
     }
 }
 
@@ -33,8 +29,8 @@ impl<T: Set, S: CPU> Read<S> for LD<T> {
 mod tests {
     use super::*;
     use crate::cpu::variables::{a_register::A, x_register::X, y_register::Y};
+    use crate::state::cpu::{Memory, Registers};
     use crate::state::NES;
-    use crate::state::cpu::{Registers, Memory};
 
     #[test]
     fn test_ld() {

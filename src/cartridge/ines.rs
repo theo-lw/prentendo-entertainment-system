@@ -1,9 +1,7 @@
 use super::mapper0::Mapper0;
 use super::Mapper;
 use crate::bitops::BitOps;
-use std::cell::RefCell;
 use std::io;
-use std::rc::Rc;
 
 const PRG_PAGE_SIZE: usize = 0x4000;
 const CHR_PAGE_SIZE: usize = 0x2000;
@@ -48,8 +46,8 @@ impl INES {
         })
     }
 
-    pub fn to_mapper(self) -> Rc<RefCell<dyn Mapper>> {
-        Rc::new(RefCell::new(Mapper0::new(self.prg, self.chr)))
+    pub fn to_mapper(self) -> Box<dyn Mapper> {
+        Box::new(Mapper0::new(self.prg, self.chr))
     }
 }
 

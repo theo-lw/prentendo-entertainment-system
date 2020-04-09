@@ -25,6 +25,7 @@ pub trait Registers {
     fn is_flag_set(&self, flag: Flag) -> bool;
     fn clear_flag(&mut self, flag: Flag);
     fn set_flag(&mut self, flag: Flag);
+    fn assign_flag(&mut self, flag: Flag, val: bool);
 }
 
 pub trait Memory {
@@ -38,3 +39,32 @@ pub trait Stack {
     fn pop_stack(&mut self);
 }
 
+/// Represents the CPU's internal state
+pub struct CPUState {
+    a: u8,
+    x: u8,
+    y: u8,
+    pc: u16,
+    s: u8,
+    p: u8,
+    internal_ram: [u8; 0x800],
+}
+
+impl CPUState {
+    #[cfg(test)]
+    pub fn mock() -> Self {
+        Self::new()
+    }
+
+    pub fn new() -> Self {
+        CPUState {
+            a: 0,
+            x: 0,
+            y: 0,
+            pc: 0,
+            s: 0xFD,
+            p: 0b0010_0100,
+            internal_ram: [0; 0x800],
+        }
+    }
+}

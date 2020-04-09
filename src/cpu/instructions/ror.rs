@@ -1,7 +1,7 @@
 use super::{Implied, Instruction, InstructionName, Modify};
 use crate::bitops::BitOps;
-use crate::state::CPU;
 use crate::cpu::variables::Flag;
+use crate::state::CPU;
 
 /// Represents the ROR instruction (http://www.obelisk.me.uk/6502/reference.html#ROR)
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -15,17 +15,9 @@ impl ROR {
         } else {
             result.clear_bit(7);
         }
-        if arg.is_bit_set(0) {
-            cpu.set_flag(Flag::C);
-        } else {
-            cpu.clear_flag(Flag::C);
-        }
-        if result == 0 {
-            cpu.set_flag(Flag::Z);
-        }
-        if result.is_bit_set(7) {
-            cpu.set_flag(Flag::N);
-        }
+        cpu.assign_flag(Flag::C, arg.is_bit_set(0));
+        cpu.assign_flag(Flag::Z, result == 0);
+        cpu.assign_flag(Flag::N, result.is_bit_set(7));
         result
     }
 }
@@ -54,8 +46,8 @@ impl<S: CPU> Implied<S> for ROR {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::state::cpu::{Memory, Registers};
     use crate::state::NES;
-    use crate::state::cpu::{Registers, Memory};
 
     #[test]
     fn test_rol_c() {

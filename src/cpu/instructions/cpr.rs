@@ -1,7 +1,7 @@
 use super::{Instruction, InstructionName, Read};
 use crate::bitops::BitOps;
-use crate::state::CPU;
 use crate::cpu::variables::{Flag, Get};
+use crate::state::CPU;
 
 /// Represents the 'compare' instructions (CMP, CPX, CPY)
 /// (http://www.obelisk.me.uk/6502/reference.html#CMP)
@@ -21,15 +21,9 @@ impl<T: Get, S: CPU> Read<S> for CP<T> {
         let byte: u8 = cpu.get_mem(addr);
         let register: u8 = self.0.get(cpu);
         let (result, overflow): (u8, bool) = register.overflowing_sub(byte);
-        if !overflow {
-            cpu.set_flag(Flag::C);
-        }
-        if result == 0 {
-            cpu.set_flag(Flag::Z);
-        }
-        if result.is_bit_set(7) {
-            cpu.set_flag(Flag::N);
-        }
+        cpu.assign_flag(Flag::C, !overflow);
+        cpu.assign_flag(Flag::Z, result == 0);
+        cpu.assign_flag(Flag::N, result.is_bit_set(7));
     }
 }
 
@@ -37,8 +31,8 @@ impl<T: Get, S: CPU> Read<S> for CP<T> {
 mod tests {
     use super::*;
     use crate::cpu::variables::{a_register::A, x_register::X, y_register::Y};
+    use crate::state::cpu::{Memory, Registers};
     use crate::state::NES;
-    use crate::state::cpu::{Registers, Memory};
 
     #[test]
     fn test_cp_c() {

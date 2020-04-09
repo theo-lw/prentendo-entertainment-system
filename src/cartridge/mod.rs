@@ -16,16 +16,23 @@ pub trait PPUMapper {
 
 /// Trait representing a mapper
 pub trait Mapper: CPUMapper + PPUMapper {
-    fn as_cpu(&self) -> &dyn CPUMapper;
-    fn as_ppu(&self) -> &dyn PPUMapper;
+    fn as_cpu_mapper(&self) -> &dyn CPUMapper;
+    fn as_ppu_mapper(&self) -> &dyn PPUMapper;
+    fn as_cpu_mapper_mut(&mut self) -> &mut dyn CPUMapper;
+    fn as_ppu_mapper_mut(&mut self) -> &mut dyn PPUMapper;
 }
 
 impl<T: CPUMapper + PPUMapper> Mapper for T {
-    fn as_cpu(&self) -> &dyn CPUMapper {
+    fn as_cpu_mapper(&self) -> &dyn CPUMapper {
         self
     }
-
-    fn as_ppu(&self) -> &dyn PPUMapper {
+    fn as_ppu_mapper(&self) -> &dyn PPUMapper {
+        self
+    }
+    fn as_cpu_mapper_mut(&mut self) -> &mut dyn CPUMapper {
+        self
+    }
+    fn as_ppu_mapper_mut(&mut self) -> &mut dyn PPUMapper {
         self
     }
 }

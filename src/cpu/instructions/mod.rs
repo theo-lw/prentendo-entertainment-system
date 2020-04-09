@@ -24,8 +24,8 @@ pub mod sef;
 pub mod str;
 pub mod trr;
 
-use crate::state::CPU;
 use crate::cpu::variables::{Flag, RegisterName};
+use crate::state::CPU;
 use std::fmt::Debug;
 
 /// This module contains instruction-related code. I have categorized instructions into the

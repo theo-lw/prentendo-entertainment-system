@@ -1,4 +1,16 @@
+pub mod apu;
 pub mod cpu;
+pub mod io;
+pub mod ppu;
+
+use crate::cartridge::Mapper;
+use apu::APUState;
+use cpu::CPUState;
+use io::IOState;
+use ppu::PPUState;
+
+#[cfg(test)]
+use crate::cartridge::mapper0::Mapper0;
 
 /// This module holds code related to the NES's state.
 
@@ -10,35 +22,34 @@ pub trait CPU: cpu::Registers + cpu::Memory + cpu::Stack {
     }
 }
 
-/// Represents the CPU's internal state
-struct CPUState {
-    a: u8,
-    x: u8,
-    y: u8,
-    pc: u16,
-    s: u8,
-    p: u8,
-    internal_ram: [u8; 0x800],
-}
-
-/// Represents the NES state
+/// Represents the NES's state
 pub struct NES {
-    cpu: CPUState
+    cpu: CPUState,
+    ppu: PPUState,
+    apu: APUState,
+    io: IOState,
+    cartridge: Box<dyn Mapper>,
 }
 
 impl NES {
     #[cfg(test)]
     pub fn mock() -> Self {
         NES {
-            cpu: CPUState {
-                a: 0,
-                x: 0,
-                y: 0,
-                pc: 0,
-                s: 0,
-                p: 0,
-                internal_ram: [0; 0x800]
-            }
+            cpu: CPUState::mock(),
+            ppu: PPUState::mock(),
+            apu: APUState::mock(),
+            io: IOState::mock(),
+            cartridge: Box::new(Mapper0::mock()),
+        }
+    }
+
+    pub fn new(cartridge: Box<dyn Mapper>) -> Self {
+        NES {
+            cpu: CPUState::new(),
+            ppu: PPUState::new(),
+            apu: APUState::new(),
+            io: IOState::new(),
+            cartridge,
         }
     }
 }

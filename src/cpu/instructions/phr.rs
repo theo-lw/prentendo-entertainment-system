@@ -1,6 +1,6 @@
 use super::{Instruction, InstructionName, PushStack};
-use crate::state::CPU;
 use crate::cpu::variables::Get;
+use crate::state::CPU;
 
 /// Represents the 'push register' instructions
 /// (http://www.obelisk.me.uk/6502/reference.html#PHA)
@@ -24,8 +24,8 @@ impl<T: Get, S: CPU> PushStack<S> for PH<T> {
 mod tests {
     use super::*;
     use crate::cpu::variables::{a_register::A, p_register::P};
-    use crate::state::NES;
     use crate::state::cpu::Registers;
+    use crate::state::NES;
 
     #[test]
     fn test_pha() {

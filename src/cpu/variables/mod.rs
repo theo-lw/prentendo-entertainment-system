@@ -11,6 +11,7 @@ use crate::state::CPU;
 /// Trait representing register variables
 pub trait Register {
     fn name(&self) -> RegisterName;
+    fn flags_set_on_change(&self) -> bool;
 }
 
 /// Trait for register variables that can be queried
@@ -33,6 +34,7 @@ pub enum Flag {
     V = 6,
     N = 7,
     B = 4,
+    U = 5,
 }
 
 /// Enum representing register names

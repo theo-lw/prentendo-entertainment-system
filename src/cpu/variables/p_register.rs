@@ -1,5 +1,6 @@
-use super::{Get, Register, RegisterName, Set};
+use super::{Get, Register, RegisterName, Set, Flag};
 use crate::state::CPU;
+use crate::bitops::BitOps;
 
 /// Represents the P register
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -9,11 +10,18 @@ impl Register for P {
     fn name(&self) -> RegisterName {
         RegisterName::P
     }
+
+    fn flags_set_on_change(&self) -> bool {
+        true
+    }
 }
 
 impl Get for P {
     fn get(&self, cpu: &dyn CPU) -> u8 {
-        cpu.get_p() | 0b0011_0000
+        let mut result = cpu.get_p();
+        // this bit is set because of how the PHP instruction works
+        result.set_bit(Flag::B as usize);
+        result
     }
 }
 
@@ -26,8 +34,8 @@ impl Set for P {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::state::NES;
     use crate::state::cpu::Registers;
+    use crate::state::NES;
 
     #[test]
     fn test_get() {
@@ -40,7 +48,7 @@ mod tests {
     fn test_set() {
         let mut cpu = NES::mock();
         cpu.set_p(40);
-        P.set(&mut cpu, 94);
-        assert_eq!(cpu.get_p(), 94);
+        P.set(&mut cpu, 0b0101_1110);
+        assert_eq!(cpu.get_p(), 0b0110_1110);
     }
 }

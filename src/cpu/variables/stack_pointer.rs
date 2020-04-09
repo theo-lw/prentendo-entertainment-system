@@ -9,6 +9,10 @@ impl Register for S {
     fn name(&self) -> RegisterName {
         RegisterName::S
     }
+
+    fn flags_set_on_change(&self) -> bool {
+        false
+    }
 }
 
 impl Get for S {
@@ -26,8 +30,8 @@ impl Set for S {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::state::NES;
     use crate::state::cpu::Registers;
+    use crate::state::NES;
 
     #[test]
     fn test_get() {

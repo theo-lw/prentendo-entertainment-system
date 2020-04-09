@@ -1,4 +1,4 @@
-use super::{CPUMapper, Mapper, PPUMapper};
+use super::{CPUMapper, PPUMapper};
 
 pub struct Mapper0 {
     prg: Vec<u8>,
@@ -25,14 +25,14 @@ impl CPUMapper for Mapper0 {
             0x4020..=0x7FFF => 0, // stand-in garbage value
             0x8000..=0xBFFF => self.prg[addr as usize - 0x8000],
             0xC000..=0xFFFF => self.prg[(addr as usize - 0x8000) % self.prg.len()],
-            _ => panic!("Address outside of mapper range!"),
+            _ => unreachable!(),
         }
     }
 
     fn set(&mut self, addr: u16, _: u8) {
         match addr {
             0x4020..=0xFFFF => {} // this mapper only provides read-only memory
-            _ => panic!("Address outside of mapper range!"),
+            _ => unreachable!(),
         }
     }
 }

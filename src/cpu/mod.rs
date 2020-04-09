@@ -2,16 +2,16 @@ pub mod instructions;
 pub mod opcode_generators;
 pub mod variables;
 
+use crate::state::CPU;
 use instructions::{
     adc::ADC, and::AND, asl::ASL, bcf::BC, bit::BIT, bsf::BS, clf::CL, cpr::CP, dec::DEC, der::DE,
     eor::EOR, inc::INC, inr::IN, ldr::LD, lsr::LSR, nop::NOP, ora::ORA, phr::PH, plr::PL, rol::ROL,
-    ror::ROR, sbc::SBC, sef::SE, str::ST, trr::T, Instruction,
+    ror::ROR, sbc::SBC, sef::SE, str::ST, trr::T,
 };
 use opcode_generators::{
     absolute, absolute_x, absolute_y, immediate, implied, indirect, indirect_x, indirect_y,
     relative, zero, zero_x, zero_y, CPUCycle,
 };
-use crate::state::CPU;
 use std::{
     cell::RefCell,
     ops::{Generator, GeneratorState},
@@ -43,16 +43,18 @@ use variables::{
 /// decouple instructions from the data they act on.
 
 /// Executes a CPU cycle
-pub fn cycle<'a, T: Instruction, S: CPU>(cpu: &'a RefCell<S>) -> impl Generator + 'a {
+pub fn cycle<'a, S: CPU>(
+    cpu: &'a RefCell<S>,
+) -> impl Generator<Yield = InstructionState, Return = ()> + 'a {
     move || loop {
         let mut instruction = get_instruction(cpu);
         'opcode: loop {
             match instruction.as_mut().resume(()) {
                 GeneratorState::Yielded(x) => {
-                    yield x;
+                    yield InstructionState::Yielded(x);
                 }
                 GeneratorState::Complete(x) => {
-                    yield x;
+                    yield InstructionState::Complete(x);
                     break 'opcode;
                 }
             }
@@ -277,4 +279,10 @@ fn get_instruction<'a, S: CPU>(
         // it is not strictly correct, but it will have to do for now
         _ => implied::implied(cpu, NOP),
     }
+}
+
+/// Represents the state of an instruction
+pub enum InstructionState {
+    Yielded(CPUCycle),
+    Complete(CPUCycle),
 }

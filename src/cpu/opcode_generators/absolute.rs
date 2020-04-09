@@ -119,7 +119,8 @@ pub fn jsr<'a, S: CPU>(
         yield cycle;
         cycle.next();
         let high_byte: u8 = cpu.borrow_mut().get_and_increment_pc();
-        cpu.borrow_mut().set_pc(u16::from_be_bytes([high_byte, low_byte]));
+        cpu.borrow_mut()
+            .set_pc(u16::from_be_bytes([high_byte, low_byte]));
         cycle
     })
 }
@@ -140,7 +141,8 @@ pub fn jmp<'a, S: CPU>(
         yield cycle;
         cycle.next();
         let high_byte: u8 = cpu.borrow_mut().get_and_increment_pc();
-        cpu.borrow_mut().set_pc(u16::from_be_bytes([high_byte, low_byte]));
+        cpu.borrow_mut()
+            .set_pc(u16::from_be_bytes([high_byte, low_byte]));
         cycle
     })
 }
@@ -150,9 +152,9 @@ mod tests {
     use super::*;
     use crate::cpu::instructions::{adc::ADC, asl::ASL, str::ST, Instruction};
     use crate::cpu::variables::a_register::A;
-    use std::ops::GeneratorState;
+    use crate::state::cpu::{Memory, Registers};
     use crate::state::NES;
-    use crate::state::cpu::{Registers, Memory};
+    use std::ops::GeneratorState;
 
     #[test]
     fn test_read() {
@@ -260,10 +262,7 @@ mod tests {
         };
         let state = opcode.as_mut().resume(());
         assert_eq!(state, GeneratorState::Yielded(cycle));
-        assert_eq!(
-            cpu.borrow().get_pc(),
-            u16::from_be_bytes([pc_high, pc_low])
-        );
+        assert_eq!(cpu.borrow().get_pc(), u16::from_be_bytes([pc_high, pc_low]));
         cycle.next();
         let state = opcode.as_mut().resume(());
         assert_eq!(state, GeneratorState::Yielded(cycle));

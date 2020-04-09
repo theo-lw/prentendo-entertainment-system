@@ -23,13 +23,15 @@ pub fn read<'a, T: Read<S> + 'a, S: CPU>(
         let pointer: u8 = cpu.borrow_mut().get_and_increment_pc();
         yield cycle;
         cycle.next();
-        let pointer: u16 = u16::from_be_bytes([0, pointer.wrapping_add(cpu.borrow().get_x())]);
+        let pointer: u8 = pointer.wrapping_add(cpu.borrow().get_x());
+        let pointer_low: u16 = u16::from_be_bytes([0, pointer]);
+        let pointer_high: u16 = u16::from_be_bytes([0, pointer.wrapping_add(1)]);
         yield cycle;
         cycle.next();
-        let low_byte: u8 = cpu.borrow().get_mem(pointer);
+        let low_byte: u8 = cpu.borrow().get_mem(pointer_low);
         yield cycle;
         cycle.next();
-        let high_byte: u8 = cpu.borrow().get_mem(pointer.wrapping_add(1));
+        let high_byte: u8 = cpu.borrow().get_mem(pointer_high);
         yield cycle;
         cycle.next();
         instruction.execute(
@@ -56,13 +58,15 @@ pub fn write<'a, T: Write<S> + 'a, S: CPU>(
         let pointer: u8 = cpu.borrow_mut().get_and_increment_pc();
         yield cycle;
         cycle.next();
-        let pointer: u16 = u16::from_be_bytes([0, pointer.wrapping_add(cpu.borrow().get_x())]);
+        let pointer: u8 = pointer.wrapping_add(cpu.borrow().get_x());
+        let pointer_low: u16 = u16::from_be_bytes([0, pointer]);
+        let pointer_high: u16 = u16::from_be_bytes([0, pointer.wrapping_add(1)]);
         yield cycle;
         cycle.next();
-        let low_byte: u8 = cpu.borrow().get_mem(pointer);
+        let low_byte: u8 = cpu.borrow().get_mem(pointer_low);
         yield cycle;
         cycle.next();
-        let high_byte: u8 = cpu.borrow().get_mem(pointer.wrapping_add(1));
+        let high_byte: u8 = cpu.borrow().get_mem(pointer_high);
         yield cycle;
         cycle.next();
         instruction.execute(
@@ -89,13 +93,15 @@ pub fn modify<'a, T: Modify<S> + 'a, S: CPU>(
         let pointer: u8 = cpu.borrow_mut().get_and_increment_pc();
         yield cycle;
         cycle.next();
-        let pointer: u16 = u16::from_be_bytes([0, pointer.wrapping_add(cpu.borrow().get_x())]);
+        let pointer: u8 = pointer.wrapping_add(cpu.borrow().get_x());
+        let pointer_low: u16 = u16::from_be_bytes([0, pointer]);
+        let pointer_high: u16 = u16::from_be_bytes([0, pointer.wrapping_add(1)]);
         yield cycle;
         cycle.next();
-        let low_byte: u8 = cpu.borrow().get_mem(pointer);
+        let low_byte: u8 = cpu.borrow().get_mem(pointer_low);
         yield cycle;
         cycle.next();
-        let high_byte: u8 = cpu.borrow().get_mem(pointer.wrapping_add(1));
+        let high_byte: u8 = cpu.borrow().get_mem(pointer_high);
         yield cycle;
         cycle.next();
         let addr = u16::from_be_bytes([high_byte, low_byte]);
@@ -115,9 +121,9 @@ mod tests {
     use super::*;
     use crate::cpu::instructions::{adc::ADC, asl::ASL, str::ST, Instruction};
     use crate::cpu::variables::a_register::A;
-    use std::ops::GeneratorState;
+    use crate::state::cpu::{Memory, Registers};
     use crate::state::NES;
-    use crate::state::cpu::{Registers, Memory};
+    use std::ops::GeneratorState;
 
     #[test]
     fn test_read() {

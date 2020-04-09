@@ -1,7 +1,7 @@
 use super::{Instruction, InstructionName, PullStack};
 use crate::bitops::BitOps;
-use crate::state::CPU;
 use crate::cpu::variables::{Flag, Set};
+use crate::state::CPU;
 
 /// Represents the 'pull stack' instructions
 /// (http://www.obelisk.me.uk/6502/reference.html#PLA)
@@ -17,12 +17,8 @@ impl<T: Set> Instruction for PL<T> {
 
 impl<T: Set, S: CPU> PullStack<S> for PL<T> {
     fn set(&self, cpu: &mut S, val: u8) {
-        if val == 0 {
-            cpu.set_flag(Flag::Z);
-        }
-        if val.is_bit_set(7) {
-            cpu.set_flag(Flag::N);
-        }
+        cpu.assign_flag(Flag::Z, val == 0);
+        cpu.assign_flag(Flag::N, val.is_bit_set(7));
         self.0.set(cpu, val);
     }
 }
@@ -31,15 +27,15 @@ impl<T: Set, S: CPU> PullStack<S> for PL<T> {
 mod tests {
     use super::*;
     use crate::cpu::variables::{a_register::A, p_register::P};
-    use crate::state::NES;
     use crate::state::cpu::Registers;
+    use crate::state::NES;
 
     #[test]
     fn test_plp() {
         let mut cpu = NES::mock();
         cpu.set_p(0);
         PL(P).set(&mut cpu, 0b0101_1110);
-        assert_eq!(cpu.get_p(), 0b0101_1110);
+        assert_eq!(cpu.get_p(), 0b0110_1110);
     }
 
     #[test]

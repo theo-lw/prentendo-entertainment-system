@@ -1,7 +1,7 @@
 use super::{Instruction, InstructionName, Modify};
 use crate::bitops::BitOps;
-use crate::state::CPU;
 use crate::cpu::variables::Flag;
+use crate::state::CPU;
 
 /// Represents the DEC instruction (http://www.obelisk.me.uk/6502/reference.html#DEC)
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -17,20 +17,16 @@ impl<S: CPU> Modify<S> for DEC {
     fn execute(&self, cpu: &mut S, addr: u16, old_val: u8) {
         let result: u8 = old_val.wrapping_sub(1);
         cpu.set_mem(addr, result);
-        if result == 0 {
-            cpu.set_flag(Flag::Z);
-        }
-        if result.is_bit_set(7) {
-            cpu.set_flag(Flag::N);
-        }
+        cpu.assign_flag(Flag::Z, result == 0);
+        cpu.assign_flag(Flag::N, result.is_bit_set(7));
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::state::cpu::{Memory, Registers};
     use crate::state::NES;
-    use crate::state::cpu::{Registers, Memory};
 
     #[test]
     fn test_dec() {

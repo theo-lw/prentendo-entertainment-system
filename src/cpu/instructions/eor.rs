@@ -1,7 +1,7 @@
 use super::{Instruction, InstructionName, Read};
 use crate::bitops::BitOps;
-use crate::state::CPU;
 use crate::cpu::variables::Flag;
+use crate::state::CPU;
 
 /// Represents the EOR instruction (http://www.obelisk.me.uk/6502/reference.html#EOR)
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -16,20 +16,16 @@ impl Instruction for EOR {
 impl<S: CPU> Read<S> for EOR {
     fn execute(&self, cpu: &mut S, addr: u16) {
         cpu.set_a(cpu.get_a() ^ cpu.get_mem(addr));
-        if cpu.get_a() == 0 {
-            cpu.set_flag(Flag::Z);
-        }
-        if cpu.get_a().is_bit_set(7) {
-            cpu.set_flag(Flag::N);
-        }
+        cpu.assign_flag(Flag::Z, cpu.get_a() == 0);
+        cpu.assign_flag(Flag::N, cpu.get_a().is_bit_set(7));
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::state::cpu::{Memory, Registers};
     use crate::state::NES;
-    use crate::state::cpu::{Registers, Memory};
 
     #[test]
     fn test_eor() {

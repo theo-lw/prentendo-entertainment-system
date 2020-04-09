@@ -29,8 +29,13 @@ pub fn jmp<'a, S: CPU>(
         let low_byte: u8 = cpu.borrow().get_mem(pointer);
         yield cycle;
         cycle.next();
-        let high_byte: u8 = cpu.borrow().get_mem(pointer.wrapping_add(1));
-        cpu.borrow_mut().set_pc(u16::from_be_bytes([high_byte, low_byte]));
+        let high_byte: u8 = if pointer_low == 0xFF {
+            cpu.borrow().get_mem(u16::from_be_bytes([pointer_high, 0]))
+        } else {
+            cpu.borrow().get_mem(pointer.wrapping_add(1))
+        };
+        cpu.borrow_mut()
+            .set_pc(u16::from_be_bytes([high_byte, low_byte]));
         cycle
     })
 }
@@ -38,9 +43,9 @@ pub fn jmp<'a, S: CPU>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::ops::GeneratorState;
+    use crate::state::cpu::{Memory, Registers};
     use crate::state::NES;
-    use crate::state::cpu::{Registers, Memory};
+    use std::ops::GeneratorState;
 
     #[test]
     fn test_jmp() {

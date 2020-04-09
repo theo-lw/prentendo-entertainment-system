@@ -1,9 +1,9 @@
 use super::{Implied, Instruction, InstructionName};
 use crate::bitops::BitOps;
-use crate::state::CPU;
 use crate::cpu::variables::{Flag, Get, Set};
+use crate::state::CPU;
 
-/// Represents the 'transfer' instructions
+/// Represents the 'transfer' instructions.
 /// (http://www.obelisk.me.uk/6502/reference.html#TAX)
 /// (http://www.obelisk.me.uk/6502/reference.html#TAY)
 /// (http://www.obelisk.me.uk/6502/reference.html#TSX)
@@ -23,11 +23,9 @@ impl<U: Get, V: Set, S: CPU> Implied<S> for T<U, V> {
     fn execute(&self, cpu: &mut S) {
         let result: u8 = self.0.get(cpu);
         self.1.set(cpu, result);
-        if result == 0 {
-            cpu.set_flag(Flag::Z);
-        }
-        if result.is_bit_set(7) {
-            cpu.set_flag(Flag::N);
+        if self.1.flags_set_on_change() {
+            cpu.assign_flag(Flag::Z, result == 0);
+            cpu.assign_flag(Flag::N, result.is_bit_set(7));
         }
     }
 }
@@ -36,8 +34,8 @@ impl<U: Get, V: Set, S: CPU> Implied<S> for T<U, V> {
 mod tests {
     use super::*;
     use crate::cpu::variables::{a_register::A, stack_pointer::S, x_register::X, y_register::Y};
+    use crate::state::cpu::Registers;
     use crate::state::NES;
-    use crate::state::cpu::{Registers, Memory};
 
     #[test]
     fn test_txs() {

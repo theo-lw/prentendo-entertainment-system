@@ -115,9 +115,9 @@ mod tests {
     use super::*;
     use crate::cpu::instructions::{adc::ADC, asl::ASL, str::ST, Instruction};
     use crate::cpu::variables::a_register::A;
-    use std::ops::GeneratorState;
+    use crate::state::cpu::{Memory, Registers};
     use crate::state::NES;
-    use crate::state::cpu::{Registers, Memory};
+    use std::ops::GeneratorState;
 
     #[test]
     fn test_read() {

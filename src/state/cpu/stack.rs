@@ -1,18 +1,14 @@
-use super::Stack;
 use super::Memory;
 use super::Registers;
+use super::Stack;
 use crate::state::NES;
 
 const STACK_PAGE: u8 = 0x01;
 
 impl Stack for NES {
-
     /// Pushes a value onto the stack
     fn push_stack(&mut self, val: u8) {
-        self.set_mem(
-            u16::from_be_bytes([STACK_PAGE, self.get_s()]),
-            val,
-        );
+        self.set_mem(u16::from_be_bytes([STACK_PAGE, self.get_s()]), val);
         self.set_s(self.get_s().wrapping_sub(1));
     }
 

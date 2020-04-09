@@ -1,11 +1,11 @@
 use crate::{
+    bitops::BitOps,
     cpu::{
         instructions::{Implied, InstructionName, PullStack, PushStack},
         opcode_generators::{AddressingMode, CPUCycle},
         variables::Flag,
     },
     state::CPU,
-    bitops::BitOps,
 };
 use std::{cell::RefCell, ops::Generator, pin::Pin};
 
@@ -181,13 +181,11 @@ pub fn brk<'a, S: CPU>(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::cpu::instructions::{asl::ASL, phr::PH, plr::PL, Instruction};
     use crate::cpu::variables::{a_register::A, p_register::P};
-    use crate::{
-        cpu::instructions::{asl::ASL, phr::PH, plr::PL, Instruction},
-    };
-    use std::ops::GeneratorState;
+    use crate::state::cpu::{Memory, Registers, Stack};
     use crate::state::NES;
-    use crate::state::cpu::{Registers, Memory, Stack};
+    use std::ops::GeneratorState;
 
     #[test]
     fn test_implied() {
@@ -276,19 +274,19 @@ mod tests {
         let state = opcode.as_mut().resume(());
         assert_eq!(state, GeneratorState::Complete(cycle));
         assert_eq!(cpu.borrow().get_s(), initial_stack_pointer);
-        assert_eq!(cpu.borrow().get_p(), p_register_new);
+        assert_eq!(cpu.borrow().get_p(), 0b1110_0000);
     }
 
     #[test]
     fn test_rti() {
         let mut cpu = NES::mock();
-        let p_register_old: u8 = 0;
+        let p_register_old: u8 = 0b0010_0000;
         let pc_old: u16 = 0;
         let initial_stack_pointer: u8 = 0xFF;
         cpu.set_p(p_register_old);
         cpu.set_pc(pc_old);
         cpu.set_s(initial_stack_pointer);
-        let p_register_new: u8 = 0b1001_0101;
+        let p_register_new: u8 = 0b1000_0101;
         let pc_low_new: u8 = 0b1101_0010;
         let pc_high_new: u8 = 0b1111_0000;
         cpu.push_stack(pc_high_new);
@@ -318,22 +316,19 @@ mod tests {
         let state = opcode.as_mut().resume(());
         assert_eq!(state, GeneratorState::Yielded(cycle));
         assert_eq!(cpu.borrow().get_s(), initial_stack_pointer - 1);
-        assert_eq!(cpu.borrow().get_p(), p_register_new);
+        assert_eq!(cpu.borrow().get_p(), p_register_new | 0b0010_0000);
         assert_eq!(cpu.borrow().get_pc(), pc_old);
         cycle.next();
         let state = opcode.as_mut().resume(());
         assert_eq!(state, GeneratorState::Yielded(cycle));
         assert_eq!(cpu.borrow().get_s(), initial_stack_pointer);
-        assert_eq!(cpu.borrow().get_p(), p_register_new);
-        assert_eq!(
-            cpu.borrow().get_pc(),
-            u16::from_be_bytes([0, pc_low_new])
-        );
+        assert_eq!(cpu.borrow().get_p(), p_register_new | 0b0010_0000);
+        assert_eq!(cpu.borrow().get_pc(), u16::from_be_bytes([0, pc_low_new]));
         cycle.next();
         let state = opcode.as_mut().resume(());
         assert_eq!(state, GeneratorState::Complete(cycle));
         assert_eq!(cpu.borrow().get_s(), initial_stack_pointer);
-        assert_eq!(cpu.borrow().get_p(), p_register_new);
+        assert_eq!(cpu.borrow().get_p(), p_register_new | 0b0010_0000);
         assert_eq!(
             cpu.borrow().get_pc(),
             u16::from_be_bytes([pc_high_new, pc_low_new])
@@ -373,10 +368,7 @@ mod tests {
         let state = opcode.as_mut().resume(());
         assert_eq!(state, GeneratorState::Yielded(cycle));
         assert_eq!(cpu.borrow().get_s(), initial_stack_pointer);
-        assert_eq!(
-            cpu.borrow().get_pc(),
-            u16::from_be_bytes([0, pc_low_new])
-        );
+        assert_eq!(cpu.borrow().get_pc(), u16::from_be_bytes([0, pc_low_new]));
         cycle.next();
         let state = opcode.as_mut().resume(());
         assert_eq!(state, GeneratorState::Yielded(cycle));

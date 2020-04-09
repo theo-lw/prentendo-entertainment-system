@@ -18,8 +18,8 @@ impl<S: CPU> Implied<S> for NOP {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::state::NES;
     use crate::state::cpu::Registers;
+    use crate::state::NES;
 
     #[test]
     fn test_nop() {

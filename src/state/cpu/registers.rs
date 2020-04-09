@@ -1,7 +1,7 @@
 use super::Registers;
-use crate::state::NES;
 use crate::bitops::BitOps;
 use crate::cpu::variables::Flag;
+use crate::state::NES;
 
 impl Registers for NES {
     fn get_a(&self) -> u8 {
@@ -24,7 +24,7 @@ impl Registers for NES {
     }
     fn get_s(&self) -> u8 {
         self.cpu.s
-    } 
+    }
     fn get_p(&self) -> u8 {
         self.cpu.p
     }
@@ -53,9 +53,12 @@ impl Registers for NES {
     }
     fn set_p(&mut self, val: u8) {
         self.cpu.p = val;
+        self.set_flag(Flag::U); // this bit is always set
+        // this bit doesn't actually exist in the NES, so we let it be zero
+        self.clear_flag(Flag::B);
     }
     fn increment_pc(&mut self) {
-        self.cpu.pc = self.cpu.pc.wrapping_add(1);
+        self.set_pc(self.get_pc().wrapping_add(1));
     }
 
     /// Sets the given flag
@@ -71,6 +74,15 @@ impl Registers for NES {
     /// Returns whether the flag is set or not
     fn is_flag_set(&self, flag: Flag) -> bool {
         self.cpu.p.is_bit_set(flag as usize)
+    }
+
+    /// Sets the flag if true, clears it otherwise
+    fn assign_flag(&mut self, flag: Flag, val: bool) {
+        if val {
+            self.set_flag(flag);
+        } else {
+            self.clear_flag(flag);
+        }
     }
 }
 

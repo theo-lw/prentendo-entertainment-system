@@ -1,7 +1,7 @@
 use super::{Instruction, InstructionName, Read};
 use crate::bitops::BitOps;
-use crate::state::CPU;
 use crate::cpu::variables::Flag;
+use crate::state::CPU;
 
 /// Represents the ADC instruction (http://www.obelisk.me.uk/6502/reference.html#ADC)
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -16,27 +16,15 @@ impl Instruction for ADC {
 impl<S: CPU> Read<S> for ADC {
     fn execute(&self, cpu: &mut S, addr: u16) {
         let byte: u8 = cpu.get_mem(addr);
-        let c: u8 = if cpu.is_flag_set(Flag::C) {
-            1
-        } else {
-            0
-        };
+        let c: u8 = if cpu.is_flag_set(Flag::C) { 1 } else { 0 };
         let a: u8 = cpu.get_a();
         let (result, overflow1): (u8, bool) = a.overflowing_add(byte);
         let (result, overflow2): (u8, bool) = result.overflowing_add(c);
-        if result.is_bit_set(7) {
-            cpu.set_flag(Flag::N);
-        }
-        if result == 0 {
-            cpu.set_flag(Flag::Z);
-        }
-        if overflow1 || overflow2 {
-            cpu.set_flag(Flag::C);
-        }
+        cpu.assign_flag(Flag::N, result.is_bit_set(7));
+        cpu.assign_flag(Flag::Z, result == 0);
+        cpu.assign_flag(Flag::C, overflow1 || overflow2);
         // if result's sign is opposite to a and byte has the same sign as a
-        if ((result ^ a) & !(byte ^ a)).is_bit_set(7) {
-            cpu.set_flag(Flag::V);
-        }
+        cpu.assign_flag(Flag::V, ((result ^ a) & !(byte ^ a)).is_bit_set(7));
         cpu.set_a(result);
     }
 }
@@ -44,8 +32,8 @@ impl<S: CPU> Read<S> for ADC {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::state::cpu::{Memory, Registers};
     use crate::state::NES;
-    use crate::state::cpu::{Registers, Memory};
 
     #[test]
     fn test_adc() {

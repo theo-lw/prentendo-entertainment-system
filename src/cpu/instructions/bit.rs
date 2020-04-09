@@ -1,7 +1,7 @@
 use super::{Instruction, InstructionName, Read};
 use crate::bitops::BitOps;
-use crate::state::CPU;
 use crate::cpu::variables::Flag;
+use crate::state::CPU;
 
 /// Represents the BIT instruction (http://www.obelisk.me.uk/6502/reference.html#BIT)
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -16,27 +16,17 @@ impl Instruction for BIT {
 impl<S: CPU> Read<S> for BIT {
     fn execute(&self, cpu: &mut S, addr: u16) {
         let byte: u8 = cpu.get_mem(addr);
-        if cpu.get_a() & byte == 0 {
-            cpu.set_flag(Flag::Z);
-        }
-        if byte.is_bit_set(7) {
-            cpu.set_flag(Flag::N);
-        } else {
-            cpu.clear_flag(Flag::N);
-        }
-        if byte.is_bit_set(6) {
-            cpu.set_flag(Flag::V);
-        } else {
-            cpu.clear_flag(Flag::V);
-        }
+        cpu.assign_flag(Flag::Z, cpu.get_a() & byte == 0);
+        cpu.assign_flag(Flag::N, byte.is_bit_set(7));
+        cpu.assign_flag(Flag::V, byte.is_bit_set(6));
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::state::cpu::{Memory, Registers};
     use crate::state::NES;
-    use crate::state::cpu::{Registers, Memory};
 
     #[test]
     fn test_bit_z() {

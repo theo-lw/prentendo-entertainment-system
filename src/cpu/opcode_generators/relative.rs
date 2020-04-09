@@ -47,15 +47,13 @@ pub fn relative<'a, T: Branch<S> + 'a, S: CPU>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        cpu::{
-            instructions::{bcf::BC, Instruction},
-            variables::Flag,
-        },
+    use crate::cpu::{
+        instructions::{bcf::BC, Instruction},
+        variables::Flag,
     };
-    use std::ops::GeneratorState;
+    use crate::state::cpu::{Memory, Registers};
     use crate::state::NES;
-    use crate::state::cpu::{Registers, Memory};
+    use std::ops::GeneratorState;
 
     #[test]
     fn test_relative_positive_overflow() {

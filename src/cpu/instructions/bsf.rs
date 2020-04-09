@@ -1,6 +1,6 @@
 use super::{Branch, Instruction, InstructionName};
-use crate::state::CPU;
 use crate::cpu::variables::Flag;
+use crate::state::CPU;
 
 /// Represents the 'branch if set' instructions
 /// (http://www.obelisk.me.uk/6502/reference.html#BCS)
@@ -25,8 +25,8 @@ impl<S: CPU> Branch<S> for BS {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::state::NES;
     use crate::state::cpu::Registers;
+    use crate::state::NES;
 
     #[test]
     fn test_bs() {

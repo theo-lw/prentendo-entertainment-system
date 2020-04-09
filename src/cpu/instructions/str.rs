@@ -1,6 +1,6 @@
 use super::{Instruction, InstructionName, Write};
-use crate::state::CPU;
 use crate::cpu::variables::Get;
+use crate::state::CPU;
 
 /// Represents the 'store' instructions
 /// (http://www.obelisk.me.uk/6502/reference.html#STA)
@@ -26,8 +26,8 @@ impl<T: Get, S: CPU> Write<S> for ST<T> {
 mod tests {
     use super::*;
     use crate::cpu::variables::a_register::A;
+    use crate::state::cpu::{Memory, Registers};
     use crate::state::NES;
-    use crate::state::cpu::{Registers, Memory};
 
     #[test]
     fn test_st() {

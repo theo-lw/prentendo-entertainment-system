@@ -1,7 +1,7 @@
 use super::{Implied, Instruction, InstructionName};
 use crate::bitops::BitOps;
-use crate::state::CPU;
 use crate::cpu::variables::{Flag, Get, Set};
+use crate::state::CPU;
 
 /// Represents the 'decrement register' instructions
 /// (http://www.obelisk.me.uk/6502/reference.html#DEX)
@@ -19,12 +19,8 @@ impl<T: Get + Set, S: CPU> Implied<S> for DE<T> {
     fn execute(&self, cpu: &mut S) {
         let result: u8 = self.0.get(cpu).wrapping_sub(1);
         self.0.set(cpu, result);
-        if result == 0 {
-            cpu.set_flag(Flag::Z);
-        }
-        if result.is_bit_set(7) {
-            cpu.set_flag(Flag::N);
-        }
+        cpu.assign_flag(Flag::Z, result == 0);
+        cpu.assign_flag(Flag::N, result.is_bit_set(7));
     }
 }
 
@@ -32,8 +28,8 @@ impl<T: Get + Set, S: CPU> Implied<S> for DE<T> {
 mod tests {
     use super::*;
     use crate::cpu::variables::{x_register::X, y_register::Y};
-    use crate::state::NES;
     use crate::state::cpu::Registers;
+    use crate::state::NES;
 
     #[test]
     fn test_dex() {
