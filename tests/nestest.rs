@@ -9,7 +9,7 @@ use pretendo_entertainment_system::state::NES;
 use std::cell::RefCell;
 use std::env;
 use std::fs::File;
-use std::io::{Write, BufWriter};
+use std::io::{BufWriter, Write};
 use std::ops::{Generator, GeneratorState};
 use std::path::PathBuf;
 use std::pin::Pin;

@@ -33,7 +33,7 @@ pub trait Registers {
 pub trait Memory {
     fn get_mem(&self, addr: u16) -> u8;
     fn set_mem(&mut self, addr: u16, val: u8);
-    
+
     /// Gets the byte at the address specified by the PC, then increments the PC
     fn get_and_increment_pc(&mut self) -> u8;
 }

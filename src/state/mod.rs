@@ -29,8 +29,7 @@ use crate::cartridge::mapper0::Mapper0;
 /// argument the `CPU` trait and not the `NES` struct.
 
 /// Trait representing the CPU
-pub trait CPU: cpu::Registers + cpu::Memory + cpu::Stack {
-}
+pub trait CPU: cpu::Registers + cpu::Memory + cpu::Stack {}
 
 /// The struct holding all of the NES's internal state.
 pub struct NES {
