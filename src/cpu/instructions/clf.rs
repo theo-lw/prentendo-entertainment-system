@@ -18,7 +18,7 @@ impl Instruction for CL {
 
 impl<S: CPU> Implied<S> for CL {
     fn execute(&self, cpu: &mut S) {
-        cpu.clear_flag(self.0);
+        cpu.assign_flag(self.0, false);
     }
 }
 
@@ -31,10 +31,10 @@ mod tests {
     #[test]
     fn test_clc() {
         let mut cpu = NES::mock();
-        cpu.clear_flag(Flag::C);
+        cpu.assign_flag(Flag::C, false);
         CL(Flag::C).execute(&mut cpu);
         assert_eq!(cpu.is_flag_set(Flag::C), false);
-        cpu.set_flag(Flag::Z);
+        cpu.assign_flag(Flag::Z, true);
         CL(Flag::Z).execute(&mut cpu);
         assert_eq!(cpu.is_flag_set(Flag::C), false);
     }

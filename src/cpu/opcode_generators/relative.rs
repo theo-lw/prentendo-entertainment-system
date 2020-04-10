@@ -58,7 +58,7 @@ mod tests {
     #[test]
     fn test_relative_positive_overflow() {
         let mut cpu = NES::mock();
-        cpu.clear_flag(Flag::C);
+        cpu.assign_flag(Flag::C, false);
         cpu.set_pc(0x10F5);
         cpu.set_mem(cpu.get_pc(), 13i8 as u8);
         let cpu = RefCell::new(cpu);
@@ -89,7 +89,7 @@ mod tests {
     #[test]
     fn test_relative_negative_overflow() {
         let mut cpu = NES::mock();
-        cpu.clear_flag(Flag::C);
+        cpu.assign_flag(Flag::C, false);
         cpu.set_pc(0x2204);
         cpu.set_mem(cpu.get_pc(), -30i8 as u8);
         let cpu = RefCell::new(cpu);
@@ -120,7 +120,7 @@ mod tests {
     #[test]
     fn test_relative_no_overflow() {
         let mut cpu = NES::mock();
-        cpu.clear_flag(Flag::C);
+        cpu.assign_flag(Flag::C, false);
         cpu.set_pc(0x2204);
         cpu.set_mem(cpu.get_pc(), 30i8 as u8);
         let cpu = RefCell::new(cpu);
@@ -147,7 +147,7 @@ mod tests {
     #[test]
     fn test_relative_no_branch() {
         let mut cpu = NES::mock();
-        cpu.set_flag(Flag::C);
+        cpu.assign_flag(Flag::C, true);
         cpu.set_pc(0x2204);
         cpu.set_mem(cpu.get_pc(), 30i8 as u8);
         let cpu = RefCell::new(cpu);

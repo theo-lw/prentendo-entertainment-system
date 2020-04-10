@@ -39,7 +39,7 @@ mod tests {
     #[test]
     fn test_dec_z() {
         let mut cpu = NES::mock();
-        cpu.clear_flag(Flag::Z);
+        cpu.assign_flag(Flag::Z, false);
         cpu.set_mem(0x3209, 100);
         DEC.execute(&mut cpu, 0x3209, 100);
         assert_eq!(cpu.is_flag_set(Flag::Z), false);
@@ -51,7 +51,7 @@ mod tests {
     #[test]
     fn test_dec_n() {
         let mut cpu = NES::mock();
-        cpu.clear_flag(Flag::N);
+        cpu.assign_flag(Flag::N, false);
         cpu.set_mem(0x3209, 100);
         DEC.execute(&mut cpu, 0x3209, 100);
         assert_eq!(cpu.is_flag_set(Flag::N), false);

@@ -41,7 +41,7 @@ mod tests {
         let mut cpu = NES::mock();
         cpu.set_mem(0x23, 0b1001_0110);
         cpu.set_a(0b1000_0101);
-        cpu.clear_flag(Flag::Z);
+        cpu.assign_flag(Flag::Z, false);
         EOR.execute(&mut cpu, 0x23);
         assert_eq!(cpu.is_flag_set(Flag::Z), false);
         cpu.set_a(0b1011_0101);
@@ -55,7 +55,7 @@ mod tests {
         let mut cpu = NES::mock();
         cpu.set_mem(0x23, 0b1101_0110);
         cpu.set_a(0b1000_0101);
-        cpu.clear_flag(Flag::N);
+        cpu.assign_flag(Flag::N, false);
         EOR.execute(&mut cpu, 0x23);
         assert_eq!(cpu.is_flag_set(Flag::N), false);
         cpu.set_a(0b0001_0010);

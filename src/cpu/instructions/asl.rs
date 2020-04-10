@@ -47,7 +47,7 @@ mod tests {
     #[test]
     fn test_asl_c() {
         let mut cpu = NES::mock();
-        cpu.clear_flag(Flag::C);
+        cpu.assign_flag(Flag::C, false);
         ASL::set_flags_and_return(&mut cpu, 0b1100_0001);
         assert_eq!(cpu.is_flag_set(Flag::C), true);
         ASL::set_flags_and_return(&mut cpu, 0b0010_1011);
@@ -57,10 +57,10 @@ mod tests {
     #[test]
     fn test_asl_z() {
         let mut cpu = NES::mock();
-        cpu.clear_flag(Flag::Z);
+        cpu.assign_flag(Flag::Z, false);
         ASL::set_flags_and_return(&mut cpu, 0b1000_0000);
         assert_eq!(cpu.is_flag_set(Flag::Z), true);
-        cpu.clear_flag(Flag::Z);
+        cpu.assign_flag(Flag::Z, false);
         ASL::set_flags_and_return(&mut cpu, 0b0010_1011);
         assert_eq!(cpu.is_flag_set(Flag::Z), false);
     }
@@ -68,10 +68,10 @@ mod tests {
     #[test]
     fn test_asl_n() {
         let mut cpu = NES::mock();
-        cpu.clear_flag(Flag::N);
+        cpu.assign_flag(Flag::N, false);
         ASL::set_flags_and_return(&mut cpu, 0b0100_0000);
         assert_eq!(cpu.is_flag_set(Flag::N), true);
-        cpu.clear_flag(Flag::N);
+        cpu.assign_flag(Flag::N, false);
         ASL::set_flags_and_return(&mut cpu, 0b1010_1011);
         assert_eq!(cpu.is_flag_set(Flag::N), false);
     }

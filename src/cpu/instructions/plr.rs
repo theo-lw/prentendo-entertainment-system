@@ -41,7 +41,7 @@ mod tests {
     #[test]
     fn test_pla_z() {
         let mut cpu = NES::mock();
-        cpu.clear_flag(Flag::Z);
+        cpu.assign_flag(Flag::Z, false);
         PL(A).set(&mut cpu, 12);
         assert_eq!(cpu.is_flag_set(Flag::Z), false);
         PL(A).set(&mut cpu, 0);
@@ -51,7 +51,7 @@ mod tests {
     #[test]
     fn test_pl_n() {
         let mut cpu = NES::mock();
-        cpu.clear_flag(Flag::N);
+        cpu.assign_flag(Flag::N, false);
         PL(A).set(&mut cpu, 0);
         assert_eq!(cpu.is_flag_set(Flag::N), false);
         PL(A).set(&mut cpu, 0b1100_0010);

@@ -53,115 +53,27 @@ impl Registers for NES {
     }
     fn set_p(&mut self, val: u8) {
         self.cpu.p = val;
-        self.set_flag(Flag::U); // this bit is always set
+        // this bit is always set
+        self.cpu.p.set_bit(Flag::U as usize);
         // this bit doesn't actually exist in the NES, so we let it be zero
-        self.clear_flag(Flag::B);
+        self.cpu.p.clear_bit(Flag::B as usize);
     }
     fn increment_pc(&mut self) {
         self.set_pc(self.get_pc().wrapping_add(1));
     }
-
-    /// Sets the given flag
-    fn set_flag(&mut self, flag: Flag) {
-        self.cpu.p.set_bit(flag as usize);
-    }
-
-    /// Clears the given flag
-    fn clear_flag(&mut self, flag: Flag) {
-        self.cpu.p.clear_bit(flag as usize);
-    }
-
-    /// Returns whether the flag is set or not
     fn is_flag_set(&self, flag: Flag) -> bool {
         self.cpu.p.is_bit_set(flag as usize)
     }
-
-    /// Sets the flag if true, clears it otherwise
     fn assign_flag(&mut self, flag: Flag, val: bool) {
         if val {
-            self.set_flag(flag);
+            self.cpu.p.set_bit(flag as usize);
         } else {
-            self.clear_flag(flag);
+            self.cpu.p.clear_bit(flag as usize);
         }
-    }
-}
-
-/*
-use crate::bitops::BitOps;
-use crate::cpu::variables::Flag;
-
-/// Represents the registers of the NES CPU
-#[derive(Debug)]
-pub struct Registers {
-    pub a: u8,
-    pub x: u8,
-    pub y: u8,
-    pub pc: u16,
-    pub s: u8,
-    pub p: u8,
-}
-
-impl Registers {
-    #[cfg(test)]
-    pub fn mock() -> Self {
-        Default::default()
-    }
-
-    /// Sets the high byte of the PC
-    pub fn set_pch(&mut self, high: u8) {
-        let [_, low]: [u8; 2] = self.pc.to_be_bytes();
-        self.pc = u16::from_be_bytes([high, low]);
-    }
-
-    /// Sets the lower byte of the PC
-    pub fn set_pcl(&mut self, low: u8) {
-        let [high, _]: [u8; 2] = self.pc.to_be_bytes();
-        self.pc = u16::from_be_bytes([high, low]);
-    }
-
-    /// Gets the high byte of the PC
-    pub fn get_pch(&self) -> u8 {
-        let [high, _]: [u8; 2] = self.pc.to_be_bytes();
-        high
-    }
-
-    /// Gets the low byte of the PC
-    pub fn get_pcl(&self) -> u8 {
-        let [_, low]: [u8; 2] = self.pc.to_be_bytes();
-        low
-    }
-
-    /// Increments the PC
-    pub fn increment_pc(&mut self) {
-        self.pc = self.pc.wrapping_add(1);
-    }
-
-    /// Sets the given flag
-    pub fn set_flag(&mut self, flag: Flag) {
-        self.p.set_bit(flag as usize);
-    }
-
-    /// Clears the given flag
-    pub fn clear_flag(&mut self, flag: Flag) {
-        self.p.clear_bit(flag as usize);
-    }
-
-    /// Returns whether the flag is set or not
-    pub fn is_flag_set(&self, flag: Flag) -> bool {
-        self.p.is_bit_set(flag as usize)
-    }
-}
-
-impl Default for Registers {
-    fn default() -> Self {
-        Registers {
-            a: 0,
-            x: 0,
-            y: 0,
-            pc: 0,
-            s: 0,
-            p: 0b0011_0000,
-        }
+        // this bit is always set
+        self.cpu.p.set_bit(Flag::U as usize);
+        // this bit doesn't actually exist in the NES, so we let it be zero
+        self.cpu.p.clear_bit(Flag::B as usize);
     }
 }
 
@@ -170,70 +82,77 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_set_flag() {
-        let mut registers = Registers::mock();
-        registers.p = 0b0010_0000;
-        registers.set_flag(Flag::B);
-        assert_eq!(registers.p, 0b0011_0000);
-        registers.set_flag(Flag::B);
-        assert_eq!(registers.p, 0b0011_0000);
+    fn test_pch() {
+        let mut cpu = NES::mock();
+        cpu.set_pc(0);
+        cpu.set_pch(0xFF);
+        assert_eq!(cpu.get_pch(), 0xFF);
+        assert_eq!(cpu.get_pc(), 0xFF00);
     }
 
     #[test]
-    fn test_is_flag_set() {
-        let mut registers = Registers::mock();
-        registers.p = 0b0010_0000;
-        assert_eq!(registers.is_flag_set(Flag::C), false);
-        registers.p = 0b0010_0001;
-        assert_eq!(registers.is_flag_set(Flag::C), true);
+    fn test_pcl() {
+        let mut cpu = NES::mock();
+        cpu.set_pc(0);
+        cpu.set_pcl(0xFF);
+        assert_eq!(cpu.get_pcl(), 0xFF);
+        assert_eq!(cpu.get_pc(), 0x00FF);
     }
 
     #[test]
-    fn test_clear_flag() {
-        let mut registers = Registers::mock();
-        registers.p = 0b1010_0000;
-        registers.clear_flag(Flag::N);
-        assert_eq!(registers.p, 0b0010_0000);
-        registers.clear_flag(Flag::N);
-        assert_eq!(registers.p, 0b0010_0000);
+    fn test_pc() {
+        let mut cpu = NES::mock();
+        cpu.set_pc(0x10FA);
+        assert_eq!(cpu.get_pc(), 0x10FA);
+        cpu.increment_pc();
+        assert_eq!(cpu.get_pc(), 0x10FB);
     }
 
     #[test]
-    fn test_set_pch() {
-        let mut registers = Registers::mock();
-        registers.pc = 0x4030;
-        registers.set_pch(0x31);
-        assert_eq!(registers.pc, 0x3130);
+    fn test_a() {
+        let mut cpu = NES::mock();
+        cpu.set_a(0xAB);
+        assert_eq!(cpu.get_a(), 0xAB);
     }
 
     #[test]
-    fn test_set_pcl() {
-        let mut registers = Registers::mock();
-        registers.pc = 0x4030;
-        registers.set_pcl(0x41);
-        assert_eq!(registers.pc, 0x4041);
+    fn test_x() {
+        let mut cpu = NES::mock();
+        cpu.set_x(0xAB);
+        assert_eq!(cpu.get_x(), 0xAB);
     }
 
     #[test]
-    fn test_get_pch() {
-        let mut registers = Registers::mock();
-        registers.pc = 0x4030;
-        assert_eq!(registers.get_pch(), 0x40);
+    fn test_y() {
+        let mut cpu = NES::mock();
+        cpu.set_y(0xAB);
+        assert_eq!(cpu.get_y(), 0xAB);
     }
 
     #[test]
-    fn test_get_pcl() {
-        let mut registers = Registers::mock();
-        registers.pc = 0x4030;
-        assert_eq!(registers.get_pcl(), 0x30);
+    fn test_s() {
+        let mut cpu = NES::mock();
+        cpu.set_s(0xAB);
+        assert_eq!(cpu.get_s(), 0xAB);
     }
 
     #[test]
-    fn test_increment_pc() {
-        let mut registers = Registers::mock();
-        registers.pc = 0x4030;
-        registers.increment_pc();
-        assert_eq!(registers.pc, 0x4031);
+    fn test_p() {
+        let mut cpu = NES::mock();
+        cpu.set_p(0b0101_1001);
+        assert_eq!(cpu.get_p(), 0b0110_1001);
+    }
+
+    #[test]
+    fn test_flag() {
+        let mut cpu = NES::mock();
+        cpu.assign_flag(Flag::V, false);
+        assert!(!cpu.is_flag_set(Flag::V));
+        cpu.assign_flag(Flag::V, true);
+        assert!(cpu.is_flag_set(Flag::V));
+        cpu.assign_flag(Flag::B, true);
+        assert!(!cpu.is_flag_set(Flag::B));
+        cpu.assign_flag(Flag::U, false);
+        assert!(cpu.is_flag_set(Flag::U));
     }
 }
-*/

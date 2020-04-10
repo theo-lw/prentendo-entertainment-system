@@ -1,19 +1,20 @@
 #![feature(generator_trait)]
+use file_diff::diff;
 use pretendo_entertainment_system::cartridge::ines::{ROMError, INES};
 use pretendo_entertainment_system::cartridge::Mapper;
 use pretendo_entertainment_system::cpu;
 use pretendo_entertainment_system::cpu::InstructionState;
-use pretendo_entertainment_system::state::cpu::{Registers};
+use pretendo_entertainment_system::state::cpu::Registers;
 use pretendo_entertainment_system::state::NES;
 use std::cell::RefCell;
 use std::env;
 use std::fs::File;
-use std::io::Write;
+use std::io::{Write, BufWriter};
 use std::ops::{Generator, GeneratorState};
 use std::path::PathBuf;
 use std::pin::Pin;
-use file_diff::diff;
 
+/// Test harness for the nestest ROM
 #[test]
 fn nes_test_cpu() -> Result<(), ROMError> {
     // Initialize NES
@@ -30,7 +31,7 @@ fn nes_test_cpu() -> Result<(), ROMError> {
     let log_path: PathBuf = [env!("CARGO_MANIFEST_DIR"), "tests", "data", "test.log"]
         .iter()
         .collect();
-    let mut log = File::create(log_path)?;
+    let mut log = BufWriter::new(File::create(log_path)?);
     let mut cycle: u16 = 0;
     write!(
         log,
@@ -43,7 +44,7 @@ fn nes_test_cpu() -> Result<(), ROMError> {
         nes.borrow().get_s(),
         cycle
     )?;
-    
+
     // Execute instructions cycle by cycle
     let mut cpu_generator = cpu::cycle(&nes);
     // at this point the ROM starts executing unofficial unstructions
@@ -66,12 +67,18 @@ fn nes_test_cpu() -> Result<(), ROMError> {
             )?;
         }
     }
+    log.flush()?;
+
+    // Diff logs
     let correct_log_path: PathBuf = [env!("CARGO_MANIFEST_DIR"), "tests", "data", "nestest.log"]
         .iter()
         .collect();
     let log_path: PathBuf = [env!("CARGO_MANIFEST_DIR"), "tests", "data", "test.log"]
         .iter()
         .collect();
-    assert!(diff(log_path.to_str().unwrap(), correct_log_path.to_str().unwrap()));
+    assert!(diff(
+        log_path.to_str().unwrap(),
+        correct_log_path.to_str().unwrap()
+    ));
     Ok(())
 }

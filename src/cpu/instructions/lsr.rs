@@ -47,7 +47,7 @@ mod tests {
     #[test]
     fn test_lsr_c() {
         let mut cpu = NES::mock();
-        cpu.clear_flag(Flag::C);
+        cpu.assign_flag(Flag::C, false);
         LSR::set_flags_and_return(&mut cpu, 0b0100_0001);
         assert_eq!(cpu.is_flag_set(Flag::C), true);
         LSR::set_flags_and_return(&mut cpu, 0b1010_1010);
@@ -57,10 +57,10 @@ mod tests {
     #[test]
     fn test_lsr_z() {
         let mut cpu = NES::mock();
-        cpu.clear_flag(Flag::Z);
+        cpu.assign_flag(Flag::Z, false);
         LSR::set_flags_and_return(&mut cpu, 0b0000_0001);
         assert_eq!(cpu.is_flag_set(Flag::Z), true);
-        cpu.clear_flag(Flag::Z);
+        cpu.assign_flag(Flag::Z, false);
         LSR::set_flags_and_return(&mut cpu, 0b1000_0000);
         assert_eq!(cpu.is_flag_set(Flag::Z), false);
     }
@@ -68,7 +68,7 @@ mod tests {
     #[test]
     fn test_lsr_n() {
         let mut cpu = NES::mock();
-        cpu.clear_flag(Flag::N);
+        cpu.assign_flag(Flag::N, false);
         LSR::set_flags_and_return(&mut cpu, 0b0100_0001);
         assert_eq!(cpu.is_flag_set(Flag::N), false);
     }

@@ -4,6 +4,7 @@ mod stack;
 
 use crate::cpu::variables::Flag;
 
+/// Trait representing CPU registers
 pub trait Registers {
     fn get_a(&self) -> u8;
     fn get_x(&self) -> u8;
@@ -23,19 +24,29 @@ pub trait Registers {
     fn set_p(&mut self, val: u8);
     fn increment_pc(&mut self);
     fn is_flag_set(&self, flag: Flag) -> bool;
-    fn clear_flag(&mut self, flag: Flag);
-    fn set_flag(&mut self, flag: Flag);
+
+    /// If `val` is true, the flag is set. Otherwise, the flag is cleared
     fn assign_flag(&mut self, flag: Flag, val: bool);
 }
 
+/// Trait representing the CPU's memory
 pub trait Memory {
     fn get_mem(&self, addr: u16) -> u8;
     fn set_mem(&mut self, addr: u16, val: u8);
+    
+    /// Gets the byte at the address specified by the PC, then increments the PC
+    fn get_and_increment_pc(&mut self) -> u8;
 }
 
+/// Trait representing the CPU's stack
 pub trait Stack {
+    /// Pushes a value onto the stack
     fn push_stack(&mut self, val: u8);
+
+    /// Retrieves the top of the stack (i.e, what's pointed to by the stack pointer)
     fn top_stack(&self) -> u8;
+
+    /// Removes the top of the stack by decrementing the stack pointer
     fn pop_stack(&mut self);
 }
 

@@ -23,7 +23,10 @@ impl<S: CPU> Read<S> for SBC {
         cpu.assign_flag(Flag::N, result.is_bit_set(7));
         cpu.assign_flag(Flag::Z, result == 0);
         cpu.assign_flag(Flag::C, !(overflow1 || overflow2));
-        cpu.assign_flag(Flag::V, ((result ^ a_register) & (byte ^ a_register)).is_bit_set(7));
+        cpu.assign_flag(
+            Flag::V,
+            ((result ^ a_register) & (byte ^ a_register)).is_bit_set(7),
+        );
         cpu.set_a(result);
     }
 }
@@ -37,7 +40,7 @@ mod tests {
     #[test]
     fn test_sbc() {
         let mut cpu = NES::mock();
-        cpu.clear_flag(Flag::C);
+        cpu.assign_flag(Flag::C, false);
         cpu.set_a(132);
         cpu.set_mem(cpu.get_pc(), 40);
         let addr: u16 = cpu.get_pc();
@@ -48,13 +51,13 @@ mod tests {
     #[test]
     fn test_sbc_n() {
         let mut cpu = NES::mock();
-        cpu.clear_flag(Flag::N);
+        cpu.assign_flag(Flag::N, false);
         cpu.set_a(0b0100_0000);
         cpu.set_mem(cpu.get_pc(), 0b1000_0000);
         let addr: u16 = cpu.get_pc();
         SBC.execute(&mut cpu, addr);
         assert_eq!(cpu.is_flag_set(Flag::N), true);
-        cpu.clear_flag(Flag::N);
+        cpu.assign_flag(Flag::N, false);
         cpu.set_mem(addr, 0b0100_0000);
         cpu.set_a(0b1010_0000);
         SBC.execute(&mut cpu, addr);
@@ -64,14 +67,14 @@ mod tests {
     #[test]
     fn test_sbc_z() {
         let mut cpu = NES::mock();
-        cpu.clear_flag(Flag::Z);
+        cpu.assign_flag(Flag::Z, false);
         cpu.set_a(0b0100_0000);
         cpu.set_mem(cpu.get_pc(), 0b1000_0000);
         let addr: u16 = cpu.get_pc();
         SBC.execute(&mut cpu, addr);
         assert_eq!(cpu.is_flag_set(Flag::Z), false);
-        cpu.clear_flag(Flag::Z);
-        cpu.set_flag(Flag::C);
+        cpu.assign_flag(Flag::Z, false);
+        cpu.assign_flag(Flag::C, true);
         cpu.set_mem(addr, 0b1001_0010);
         cpu.set_a(0b1001_0010);
         SBC.execute(&mut cpu, addr);
@@ -81,7 +84,7 @@ mod tests {
     #[test]
     fn test_sbc_c() {
         let mut cpu = NES::mock();
-        cpu.set_flag(Flag::C);
+        cpu.assign_flag(Flag::C, true);
         cpu.set_a(0b1000_0000);
         cpu.set_mem(cpu.get_pc(), 0b0010_0000);
         let addr: u16 = cpu.get_pc();
@@ -96,13 +99,13 @@ mod tests {
     #[test]
     fn test_sbc_v() {
         let mut cpu = NES::mock();
-        cpu.clear_flag(Flag::V);
+        cpu.assign_flag(Flag::V, false);
         cpu.set_a(64i8 as u8);
         cpu.set_mem(cpu.get_pc(), -72i8 as u8);
         let addr: u16 = cpu.get_pc();
         SBC.execute(&mut cpu, addr);
         assert_eq!(cpu.is_flag_set(Flag::V), true);
-        cpu.clear_flag(Flag::V);
+        cpu.assign_flag(Flag::V, false);
         cpu.set_mem(addr, 4i8 as u8);
         cpu.set_a(43i8 as u8);
         SBC.execute(&mut cpu, addr);

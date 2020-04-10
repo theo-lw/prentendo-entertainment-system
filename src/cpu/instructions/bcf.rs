@@ -31,9 +31,9 @@ mod tests {
     #[test]
     fn test_bc() {
         let mut cpu = NES::mock();
-        cpu.clear_flag(Flag::Z);
+        cpu.assign_flag(Flag::Z, false);
         assert_eq!(BC(Flag::Z).should_branch(&mut cpu), true);
-        cpu.set_flag(Flag::Z);
+        cpu.assign_flag(Flag::Z, true);
         assert_eq!(BC(Flag::Z).should_branch(&mut cpu), false);
     }
 }

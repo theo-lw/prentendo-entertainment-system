@@ -49,7 +49,7 @@ mod tests {
     #[test]
     fn test_tay_z() {
         let mut cpu = NES::mock();
-        cpu.clear_flag(Flag::Z);
+        cpu.assign_flag(Flag::Z, false);
         cpu.set_a(198);
         cpu.set_x(12);
         T(A, Y).execute(&mut cpu);
@@ -62,7 +62,7 @@ mod tests {
     #[test]
     fn test_txa_n() {
         let mut cpu = NES::mock();
-        cpu.clear_flag(Flag::N);
+        cpu.assign_flag(Flag::N, false);
         cpu.set_a(198);
         cpu.set_x(12);
         T(X, A).execute(&mut cpu);

@@ -52,7 +52,7 @@ mod tests {
     #[test]
     fn test_rol_c() {
         let mut cpu = NES::mock();
-        cpu.clear_flag(Flag::C);
+        cpu.assign_flag(Flag::C, false);
         ROL::set_flags_and_return(&mut cpu, 0b1100_0000);
         assert_eq!(cpu.is_flag_set(Flag::C), true);
         ROL::set_flags_and_return(&mut cpu, 0b0010_1011);
@@ -62,10 +62,10 @@ mod tests {
     #[test]
     fn test_rol_z() {
         let mut cpu = NES::mock();
-        cpu.clear_flag(Flag::Z);
+        cpu.assign_flag(Flag::Z, false);
         ROL::set_flags_and_return(&mut cpu, 0b1000_0000);
         assert_eq!(cpu.is_flag_set(Flag::Z), true);
-        cpu.clear_flag(Flag::Z);
+        cpu.assign_flag(Flag::Z, false);
         ROL::set_flags_and_return(&mut cpu, 0b0010_1011);
         assert_eq!(cpu.is_flag_set(Flag::Z), false);
     }
@@ -73,10 +73,10 @@ mod tests {
     #[test]
     fn test_rol_n() {
         let mut cpu = NES::mock();
-        cpu.clear_flag(Flag::N);
+        cpu.assign_flag(Flag::N, false);
         ROL::set_flags_and_return(&mut cpu, 0b0100_0000);
         assert_eq!(cpu.is_flag_set(Flag::N), true);
-        cpu.clear_flag(Flag::N);
+        cpu.assign_flag(Flag::N, false);
         ROL::set_flags_and_return(&mut cpu, 0b1010_1011);
         assert_eq!(cpu.is_flag_set(Flag::N), false);
     }
@@ -84,7 +84,7 @@ mod tests {
     #[test]
     fn test_rol_modify() {
         let mut cpu = NES::mock();
-        cpu.set_flag(Flag::C);
+        cpu.assign_flag(Flag::C, true);
         Modify::execute(&ROL, &mut cpu, 0x2013, 0b1001_1100);
         assert_eq!(cpu.get_mem(0x2013), 0b0011_1001);
     }
@@ -92,7 +92,7 @@ mod tests {
     #[test]
     fn test_rol_implied() {
         let mut cpu = NES::mock();
-        cpu.clear_flag(Flag::C);
+        cpu.assign_flag(Flag::C, false);
         cpu.set_a(0b0110_0010);
         Implied::execute(&ROL, &mut cpu);
         assert_eq!(cpu.get_a(), 0b1100_0100);

@@ -34,7 +34,7 @@ mod tests {
         cpu.set_a(0b1001_1110);
         cpu.set_mem(0x0, 0b0110_0001);
         cpu.set_mem(0x1, 0b1000_0000);
-        cpu.clear_flag(Flag::Z);
+        cpu.assign_flag(Flag::Z, false);
         BIT.execute(&mut cpu, 0x1);
         assert_eq!(cpu.is_flag_set(Flag::Z), false);
         BIT.execute(&mut cpu, 0x0);
@@ -47,7 +47,7 @@ mod tests {
         cpu.set_a(0b1001_1110);
         cpu.set_mem(0x0, 0b0110_0001);
         cpu.set_mem(0x1, 0b1000_0000);
-        cpu.clear_flag(Flag::N);
+        cpu.assign_flag(Flag::N, false);
         BIT.execute(&mut cpu, 0x1);
         assert_eq!(cpu.is_flag_set(Flag::N), true);
         BIT.execute(&mut cpu, 0x0);
@@ -60,7 +60,7 @@ mod tests {
         cpu.set_a(0b1001_1110);
         cpu.set_mem(0x0, 0b0110_0001);
         cpu.set_mem(0x1, 0b1000_0000);
-        cpu.clear_flag(Flag::V);
+        cpu.assign_flag(Flag::V, false);
         BIT.execute(&mut cpu, 0x0);
         assert_eq!(cpu.is_flag_set(Flag::V), true);
         BIT.execute(&mut cpu, 0x1);

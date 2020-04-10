@@ -1,6 +1,6 @@
-use super::{Get, Register, RegisterName, Set, Flag};
-use crate::state::CPU;
+use super::{Flag, Get, Register, RegisterName, Set};
 use crate::bitops::BitOps;
+use crate::state::CPU;
 
 /// Represents the P register
 #[derive(Debug, Clone, Copy, PartialEq)]

@@ -21,11 +21,8 @@ use variables::{
     a_register::A, p_register::P, stack_pointer::S, x_register::X, y_register::Y, Flag,
 };
 
-/// This module contains CPU-related code.
-/// It contains four sub-modules: `instructions`, `opcode_generators`, `state`, and 'variables'.
-///
-/// `state` is the simplest of them - it holds the state of the CPU, which includes code related to
-/// the registers and the memory map.
+/// This module contains code related to the execution of CPU instructions.
+/// It contains sub-modules: `instructions`, `opcode_generators`, and 'variables'.
 ///
 /// To understand `opcode_generators` and `instructions`, we have to understand the anatomy of an
 /// opcode. Consider the following opcode: `ADC #10`. It consists of two parts, an *instruction* and

@@ -42,7 +42,7 @@ mod tests {
     #[test]
     fn test_dex_z() {
         let mut cpu = NES::mock();
-        cpu.clear_flag(Flag::Z);
+        cpu.assign_flag(Flag::Z, false);
         cpu.set_x(100);
         DE(X).execute(&mut cpu);
         assert_eq!(cpu.is_flag_set(Flag::Z), false);
@@ -54,7 +54,7 @@ mod tests {
     #[test]
     fn test_dex_n() {
         let mut cpu = NES::mock();
-        cpu.clear_flag(Flag::N);
+        cpu.assign_flag(Flag::N, false);
         cpu.set_y(100);
         DE(Y).execute(&mut cpu);
         assert_eq!(cpu.is_flag_set(Flag::N), false);

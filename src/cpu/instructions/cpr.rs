@@ -39,7 +39,7 @@ mod tests {
         let mut cpu = NES::mock();
         cpu.set_mem(0x30, 13);
         cpu.set_x(2);
-        cpu.clear_flag(Flag::C);
+        cpu.assign_flag(Flag::C, false);
         CP(X).execute(&mut cpu, 0x30);
         assert_eq!(cpu.is_flag_set(Flag::C), false);
         cpu.set_x(30);
@@ -52,7 +52,7 @@ mod tests {
         let mut cpu = NES::mock();
         cpu.set_mem(0x30, 30);
         cpu.set_y(50);
-        cpu.clear_flag(Flag::Z);
+        cpu.assign_flag(Flag::Z, false);
         CP(Y).execute(&mut cpu, 0x30);
         assert_eq!(cpu.is_flag_set(Flag::Z), false);
         cpu.set_mem(0x30, 50);
@@ -65,7 +65,7 @@ mod tests {
         let mut cpu = NES::mock();
         cpu.set_mem(0x30, 40);
         cpu.set_a(45);
-        cpu.clear_flag(Flag::N);
+        cpu.assign_flag(Flag::N, false);
         CP(A).execute(&mut cpu, 0x30);
         assert_eq!(cpu.is_flag_set(Flag::N), false);
         cpu.set_a(12);
