@@ -1,5 +1,5 @@
 use super::mapper0::Mapper0;
-use super::Mapper;
+use super::{Mapper, NametableMirroring};
 use crate::bitops::BitOps;
 use std::io;
 
@@ -8,8 +8,8 @@ const CHR_PAGE_SIZE: usize = 0x2000;
 const TRAINER_SIZE: usize = 0x200;
 
 pub struct INES {
-    prg: Vec<u8>,
-    chr: Vec<u8>,
+    pub prg: Vec<u8>,
+    pub chr: Vec<u8>,
     flags6: u8,
     flags7: u8,
     flags8: u8,
@@ -18,6 +18,19 @@ pub struct INES {
 }
 
 impl INES {
+    #[cfg(test)]
+    pub fn mock(prg: Vec<u8>, chr: Vec<u8>) -> Self {
+        INES {
+            prg,
+            chr,
+            flags6: 0,
+            flags7: 0,
+            flags8: 0,
+            flags9: 0,
+            flags10: 0,
+        }
+    }
+
     pub fn from_file(file: &mut impl io::Read) -> Result<Self, ROMError> {
         let header: Vec<u8> = take(file, 16)?;
         if &header[0..4] != b"NES\x1A" {
@@ -47,7 +60,15 @@ impl INES {
     }
 
     pub fn to_mapper(self) -> Box<dyn Mapper> {
-        Box::new(Mapper0::new(self.prg, self.chr))
+        Box::new(Mapper0::new(self))
+    }
+
+    pub fn get_nametable_mirroring(&self) -> NametableMirroring {
+        match self.flags6 & 0b1001 {
+            0 => NametableMirroring::Horizontal,
+            1 => NametableMirroring::Vertical,
+            _ => NametableMirroring::FourScreen,
+        }
     }
 }
 

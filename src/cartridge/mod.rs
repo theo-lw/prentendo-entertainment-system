@@ -12,6 +12,7 @@ pub trait CPUMapper {
 pub trait PPUMapper {
     fn get(&self, addr: u16) -> u8;
     fn set(&mut self, addr: u16, val: u8);
+    fn get_nametable_mirroring(&self) -> NametableMirroring;
 }
 
 /// Trait representing a mapper
@@ -35,4 +36,11 @@ impl<T: CPUMapper + PPUMapper> Mapper for T {
     fn as_ppu_mapper_mut(&mut self) -> &mut dyn PPUMapper {
         self
     }
+}
+
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum NametableMirroring {
+    Horizontal,
+    Vertical,
+    FourScreen,
 }
