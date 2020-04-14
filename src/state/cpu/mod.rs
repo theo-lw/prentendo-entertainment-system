@@ -1,8 +1,10 @@
 mod memory;
 mod registers;
 mod stack;
+mod oamdma;
 
 use crate::cpu::variables::Flag;
+use std::cell::Cell;
 
 /// Trait representing CPU registers
 pub trait Registers {
@@ -50,6 +52,16 @@ pub trait Stack {
     fn pop_stack(&mut self);
 }
 
+/// Trait for OAMDMA-related behaviour
+pub trait OAMDMA {
+    fn is_oam_dma_triggered(&self) -> bool;
+    fn untrigger_oam_dma(&mut self);
+    fn get_oam_dma(&self) -> u8;
+    fn write_oam(&mut self, val: u8);
+    fn toggle_odd_even(&mut self);
+    fn is_odd_cycle(&self) -> bool;
+}
+
 /// Represents the CPU's internal state
 pub struct CPUState {
     a: u8,
@@ -59,6 +71,10 @@ pub struct CPUState {
     s: u8,
     p: u8,
     internal_ram: [u8; 0x800],
+    open_bus: Cell<u8>,
+    odd_cycle: bool,
+    oam_dma: u8,
+    oam_dma_triggered: bool,
 }
 
 impl CPUState {
@@ -76,6 +92,10 @@ impl CPUState {
             s: 0xFD,
             p: 0b0010_0100,
             internal_ram: [0; 0x800],
+            open_bus: Cell::new(0),
+            odd_cycle: false,
+            oam_dma: 0,
+            oam_dma_triggered: false
         }
     }
 }

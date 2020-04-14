@@ -3,9 +3,9 @@ use super::CycleStatus;
 use crate::state::NES;
 
 impl Cycle for NES {
-    fn next(&mut self) {
-        self.ppu.current_cycle.cycle = (self.ppu.current_cycle.cycle + 1) % CycleStatus::MAX_CYCLES;
-        if self.ppu.current_cycle.cycle == 0 {
+    fn update_cycle(&mut self) {
+        self.ppu.current_cycle.tick = (self.ppu.current_cycle.tick + 1) % CycleStatus::MAX_TICKS;
+        if self.ppu.current_cycle.tick == 0 {
             self.ppu.current_cycle.scanline =
                 (self.ppu.current_cycle.scanline + 1) % CycleStatus::MAX_SCANLINES;
             if self.ppu.current_cycle.scanline != 0 {
@@ -26,6 +26,6 @@ impl Cycle for NES {
     }
 
     fn get_cycle(&self) -> usize {
-        self.ppu.current_cycle.cycle
+        self.ppu.current_cycle.tick
     }
 }

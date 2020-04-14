@@ -9,10 +9,9 @@ impl Memory for NES {
     }
 
     fn get_mem(&self, addr: u16) -> u8 {
-        match addr {
+        self.cpu.open_bus.set(match addr {
             0..=0x1FFF => self.cpu.internal_ram[usize::from(addr % 0x800)],
             0x2000..=0x3FFF => self.ppu.cpu_get(0x2000 + (addr - 0x2000) % 8),
-            0x4014 => self.ppu.cpu_get(0x4014),
             0x4000 => self.apu.sq1_vol,
             0x4001 => self.apu.sq1_sweep,
             0x4002 => self.apu.sq1_lo,
@@ -33,19 +32,20 @@ impl Memory for NES {
             0x4011 => self.apu.dmc_raw,
             0x4012 => self.apu.dmc_start,
             0x4013 => self.apu.dmc_len,
+            0x4014 => self.cpu.open_bus.get(),
             0x4015 => self.apu.snd_chn,
             0x4016 => self.io.joy1,
             0x4017 => self.io.joy2,
-            0x4018..=0x401F => self.io.test_data[usize::from(addr - 0x4018)],
+            0x4018..=0x401F => self.cpu.open_bus.get(),
             0x4020..=0xFFFF => self.cartridge.as_cpu_mapper().get(addr),
-        }
+        });
+        self.cpu.open_bus.get()
     }
 
     fn set_mem(&mut self, addr: u16, val: u8) {
         match addr {
             0..=0x1FFF => self.cpu.internal_ram[usize::from(addr % 0x800)] = val,
             0x2000..=0x3FFF => self.ppu.cpu_set(0x2000 + (addr - 0x2000) % 8, val),
-            0x4014 => self.ppu.cpu_set(0x4014, val),
             0x4000 => self.apu.sq1_vol = val,
             0x4001 => self.apu.sq1_sweep = val,
             0x4002 => self.apu.sq1_lo = val,
@@ -66,10 +66,14 @@ impl Memory for NES {
             0x4011 => self.apu.dmc_raw = val,
             0x4012 => self.apu.dmc_start = val,
             0x4013 => self.apu.dmc_len = val,
+            0x4014 => {
+                self.cpu.oam_dma_triggered = true;
+                self.cpu.oam_dma = val;
+            },
             0x4015 => self.apu.snd_chn = val,
             0x4016 => self.io.joy1 = val,
             0x4017 => self.io.joy2 = val,
-            0x4018..=0x401F => self.io.test_data[usize::from(addr - 0x4018)] = val,
+            0x4018..=0x401F => {}, // this functionality is normally disabled
             0x4020..=0xFFFF => self.cartridge.as_cpu_mapper_mut().set(addr, val),
         }
     }

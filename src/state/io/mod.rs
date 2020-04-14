@@ -4,7 +4,6 @@ pub struct IOState {
     pub joy2: u8,
     pub unused1: u8,
     pub unused2: u8,
-    pub test_data: [u8; 8],
 }
 
 impl IOState {
@@ -19,7 +18,6 @@ impl IOState {
             joy2: 0,
             unused1: 0,
             unused2: 0,
-            test_data: [0; 8],
         }
     }
 }

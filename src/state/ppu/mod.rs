@@ -5,12 +5,14 @@ mod internal_registers;
 mod mapped_registers;
 mod memory;
 mod ram;
+mod oam;
 
 use crate::bitops::BitOps;
 use cycle_status::CycleStatus;
 use internal_registers::InternalRegisters;
 use mapped_registers::MappedRegisters;
 use ram::RAM;
+use oam::OAM;
 
 pub trait Background {
     fn get_nametable_addr(&self) -> u16;
@@ -25,7 +27,7 @@ pub trait Memory {
 }
 
 pub trait Cycle {
-    fn next(&mut self);
+    fn update_cycle(&mut self);
     fn get_scanline(&self) -> usize;
     fn get_cycle(&self) -> usize;
 }
@@ -33,6 +35,7 @@ pub trait Cycle {
 /// Represents the PPU's state
 pub struct PPUState {
     ram: RAM,
+    pub oam: OAM,
     current_cycle: CycleStatus,
     internal_registers: InternalRegisters,
     mapped_registers: MappedRegisters,
@@ -47,6 +50,7 @@ impl PPUState {
     pub fn new() -> Self {
         PPUState {
             ram: RAM::new(),
+            oam: OAM::new(),
             current_cycle: CycleStatus::new(),
             internal_registers: InternalRegisters::new(),
             mapped_registers: MappedRegisters::new(),
@@ -54,17 +58,17 @@ impl PPUState {
     }
 
     pub fn cpu_get(&self, addr: u16) -> u8 {
-        match addr {
-            0x2000 => self.mapped_registers.ppu_ctrl,
-            0x2001 => self.mapped_registers.ppu_mask,
+        self.mapped_registers.open_bus.set(match addr {
+            0x2000 => self.mapped_registers.open_bus.get(),
+            0x2001 => self.mapped_registers.open_bus.get(),
             0x2002 => {
                 self.internal_registers.w.set(false);
                 self.mapped_registers.ppu_status
             }
-            0x2003 => self.mapped_registers.oam_addr,
-            0x2004 => self.mapped_registers.oam_data,
-            0x2005 => self.mapped_registers.ppu_scroll,
-            0x2006 => self.mapped_registers.ppu_addr,
+            0x2003 => self.mapped_registers.open_bus.get(),
+            0x2004 => self.oam.read(),
+            0x2005 => self.mapped_registers.open_bus.get(),
+            0x2006 => self.mapped_registers.open_bus.get(),
             0x2007 => {
                 if self.current_cycle.is_on_render_line() {
                     self.internal_registers.increment_y();
@@ -79,12 +83,13 @@ impl PPUState {
                 }
                 self.mapped_registers.ppu_data
             }
-            0x4014 => self.mapped_registers.oam_dma,
             _ => unreachable!(),
-        }
+        });
+        self.mapped_registers.open_bus.get()
     }
 
     pub fn cpu_set(&mut self, addr: u16, val: u8) {
+        self.mapped_registers.open_bus.set(val);
         match addr {
             0x2000 => {
                 self.internal_registers
@@ -93,9 +98,15 @@ impl PPUState {
                 self.mapped_registers.ppu_ctrl = val;
             }
             0x2001 => self.mapped_registers.ppu_mask = val,
-            0x2002 => self.mapped_registers.ppu_status = val,
-            0x2003 => self.mapped_registers.oam_addr = val,
-            0x2004 => self.mapped_registers.oam_data = val,
+            0x2002 => {},
+            0x2003 => self.oam.addr = val,
+            0x2004 => {
+                // "for emulation purposes it's probably best to ignore writes during rendering"
+                if self.current_cycle.is_on_render_line() {
+                    return;
+                }
+                self.oam.write(val);
+            },
             0x2005 => {
                 if self.internal_registers.w.get() {
                     self.internal_registers.t.replace_bits(
@@ -141,7 +152,6 @@ impl PPUState {
                 }
                 self.mapped_registers.ppu_data = val;
             }
-            0x4014 => self.mapped_registers.oam_dma = val,
             _ => unreachable!(),
         }
     }

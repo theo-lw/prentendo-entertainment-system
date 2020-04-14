@@ -1,6 +1,7 @@
-pub mod instructions;
-pub mod opcode_generators;
+mod instructions;
+mod opcode_generators;
 pub mod variables;
+mod oamdma;
 
 use crate::state::CPU;
 use instructions::{
@@ -12,6 +13,7 @@ use opcode_generators::{
     absolute, absolute_x, absolute_y, immediate, implied, indirect, indirect_x, indirect_y,
     relative, zero, zero_x, zero_y, CPUCycle,
 };
+use oamdma::oamdma;
 use std::{
     cell::RefCell,
     ops::{Generator, GeneratorState},
@@ -46,12 +48,23 @@ pub fn cycle<'a, S: CPU>(
     move || loop {
         let mut instruction = get_instruction(cpu);
         'opcode: loop {
-            match instruction.as_mut().resume(()) {
+            let cycle_state = instruction.as_mut().resume(());
+            if cpu.borrow().is_oam_dma_triggered() {
+                let mut oamdma = oamdma(cpu);
+                while let GeneratorState::Yielded(_) = Pin::new(&mut oamdma).resume(()) {
+                    yield InstructionState::OAMDMA;
+                    cpu.borrow_mut().toggle_odd_even();
+                }
+                cpu.borrow_mut().untrigger_oam_dma();
+            }
+            match cycle_state {
                 GeneratorState::Yielded(x) => {
                     yield InstructionState::Yielded(x);
+                    cpu.borrow_mut().toggle_odd_even();
                 }
                 GeneratorState::Complete(x) => {
                     yield InstructionState::Complete(x);
+                    cpu.borrow_mut().toggle_odd_even();
                     break 'opcode;
                 }
             }
@@ -280,6 +293,7 @@ fn get_instruction<'a, S: CPU>(
 
 /// Represents the state of an instruction
 pub enum InstructionState {
+    OAMDMA,
     Yielded(CPUCycle),
     Complete(CPUCycle),
 }

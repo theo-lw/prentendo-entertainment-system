@@ -1,17 +1,17 @@
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct CycleStatus {
-    pub cycle: usize,
+    pub tick: usize,
     pub scanline: usize,
     pub is_odd_frame: bool,
 }
 
 impl CycleStatus {
     pub const MAX_SCANLINES: usize = 262;
-    pub const MAX_CYCLES: usize = 341;
+    pub const MAX_TICKS: usize = 341;
 
     pub fn new() -> Self {
         CycleStatus {
-            cycle: 0,
+            tick: 0,
             scanline: 0,
             is_odd_frame: false,
         }
