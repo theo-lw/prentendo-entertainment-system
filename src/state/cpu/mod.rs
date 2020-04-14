@@ -1,7 +1,8 @@
+mod interrupt;
 mod memory;
+mod oamdma;
 mod registers;
 mod stack;
-mod oamdma;
 
 use crate::cpu::variables::Flag;
 use std::cell::Cell;
@@ -62,6 +63,14 @@ pub trait OAMDMA {
     fn is_odd_cycle(&self) -> bool;
 }
 
+/// Trait for interrupt-related behaviour
+pub trait Interrupt {
+    fn get_pending_interrupt(&self) -> InterruptState;
+    fn trigger_nmi(&mut self);
+    fn trigger_irq(&mut self);
+    fn clear_interrupt(&mut self);
+}
+
 /// Represents the CPU's internal state
 pub struct CPUState {
     a: u8,
@@ -75,6 +84,14 @@ pub struct CPUState {
     odd_cycle: bool,
     oam_dma: u8,
     oam_dma_triggered: bool,
+    pending_interrupt: InterruptState,
+}
+
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum InterruptState {
+    NMI,
+    IRQ,
+    None,
 }
 
 impl CPUState {
@@ -95,7 +112,8 @@ impl CPUState {
             open_bus: Cell::new(0),
             odd_cycle: false,
             oam_dma: 0,
-            oam_dma_triggered: false
+            oam_dma_triggered: false,
+            pending_interrupt: InterruptState::None,
         }
     }
 }

@@ -1,6 +1,6 @@
-use std::ops::Generator;
-use crate::state::cpu::{OAMDMA, Memory};
+use crate::state::cpu::{Memory, OAMDMA};
 use std::cell::RefCell;
+use std::ops::Generator;
 
 pub fn oamdma<'a, S: OAMDMA + Memory>(
     cpu: &'a RefCell<S>,
@@ -11,7 +11,9 @@ pub fn oamdma<'a, S: OAMDMA + Memory>(
             yield;
         }
         for i in 0..=0xFF {
-            let byte = cpu.borrow().get_mem(u16::from_be_bytes([cpu.borrow().get_oam_dma(), i]));
+            let byte = cpu
+                .borrow()
+                .get_mem(u16::from_be_bytes([cpu.borrow().get_oam_dma(), i]));
             yield;
             cpu.borrow_mut().write_oam(byte);
             yield;

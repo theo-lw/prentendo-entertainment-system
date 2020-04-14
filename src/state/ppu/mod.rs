@@ -4,15 +4,15 @@ mod cycle_status;
 mod internal_registers;
 mod mapped_registers;
 mod memory;
-mod ram;
 mod oam;
+mod ram;
 
 use crate::bitops::BitOps;
 use cycle_status::CycleStatus;
 use internal_registers::InternalRegisters;
 use mapped_registers::MappedRegisters;
-use ram::RAM;
 use oam::OAM;
+use ram::RAM;
 
 pub trait Background {
     fn get_nametable_addr(&self) -> u16;
@@ -98,7 +98,7 @@ impl PPUState {
                 self.mapped_registers.ppu_ctrl = val;
             }
             0x2001 => self.mapped_registers.ppu_mask = val,
-            0x2002 => {},
+            0x2002 => {}
             0x2003 => self.oam.addr = val,
             0x2004 => {
                 // "for emulation purposes it's probably best to ignore writes during rendering"
@@ -106,7 +106,7 @@ impl PPUState {
                     return;
                 }
                 self.oam.write(val);
-            },
+            }
             0x2005 => {
                 if self.internal_registers.w.get() {
                     self.internal_registers.t.replace_bits(

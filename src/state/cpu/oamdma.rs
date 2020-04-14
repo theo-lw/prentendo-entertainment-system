@@ -17,7 +17,7 @@ impl OAMDMA for NES {
     fn toggle_odd_even(&mut self) {
         self.cpu.odd_cycle = !self.cpu.odd_cycle;
     }
-    
+
     fn is_odd_cycle(&self) -> bool {
         self.cpu.odd_cycle
     }

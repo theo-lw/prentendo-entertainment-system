@@ -69,11 +69,11 @@ impl Memory for NES {
             0x4014 => {
                 self.cpu.oam_dma_triggered = true;
                 self.cpu.oam_dma = val;
-            },
+            }
             0x4015 => self.apu.snd_chn = val,
             0x4016 => self.io.joy1 = val,
             0x4017 => self.io.joy2 = val,
-            0x4018..=0x401F => {}, // this functionality is normally disabled
+            0x4018..=0x401F => {} // this functionality is normally disabled
             0x4020..=0xFFFF => self.cartridge.as_cpu_mapper_mut().set(addr, val),
         }
     }

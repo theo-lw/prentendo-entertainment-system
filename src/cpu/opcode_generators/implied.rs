@@ -9,6 +9,8 @@ use crate::{
 };
 use std::{cell::RefCell, ops::Generator, pin::Pin};
 
+const BRK_VECTOR: u16 = 0xFFFE;
+
 /// Creates the opcode for instructions with implied/accumulator addressing.
 pub fn implied<'a, T: Implied<S> + 'a, S: CPU>(
     cpu: &'a RefCell<S>,
@@ -168,11 +170,12 @@ pub fn brk<'a, S: CPU>(
         cpu.borrow_mut().push_stack(p_register);
         yield cycle;
         cycle.next();
-        let interrupt_low: u8 = cpu.borrow().get_mem(0xFFFE);
+        let interrupt_low: u8 = cpu.borrow().get_mem(BRK_VECTOR);
         cpu.borrow_mut().set_pcl(interrupt_low);
+        cpu.borrow_mut().assign_flag(Flag::I, true);
         yield cycle;
         cycle.next();
-        let interrupt_high: u8 = cpu.borrow().get_mem(0xFFFF);
+        let interrupt_high: u8 = cpu.borrow().get_mem(BRK_VECTOR + 1);
         cpu.borrow_mut().set_pch(interrupt_high);
         cycle
     })

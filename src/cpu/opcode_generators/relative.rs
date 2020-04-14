@@ -90,7 +90,7 @@ mod tests {
     fn test_relative_negative_overflow() {
         let mut cpu = NES::mock();
         cpu.assign_flag(Flag::C, false);
-        cpu.set_pc(0x2204);
+        cpu.set_pc(0x1204);
         cpu.set_mem(cpu.get_pc(), -30i8 as u8);
         let cpu = RefCell::new(cpu);
         let instruction = BC(Flag::C);
@@ -102,26 +102,26 @@ mod tests {
         let mut opcode = relative(&cpu, instruction);
         let state = opcode.as_mut().resume(());
         assert_eq!(state, GeneratorState::Yielded(cycle));
-        assert_eq!(cpu.borrow().get_pc(), 0x2204);
+        assert_eq!(cpu.borrow().get_pc(), 0x1204);
         cycle.next();
         let state = opcode.as_mut().resume(());
         assert_eq!(state, GeneratorState::Yielded(cycle));
-        assert_eq!(cpu.borrow().get_pc(), 0x2205);
+        assert_eq!(cpu.borrow().get_pc(), 0x1205);
         cycle.next();
         let state = opcode.as_mut().resume(());
         assert_eq!(state, GeneratorState::Yielded(cycle));
-        assert_eq!(cpu.borrow().get_pc(), 0x22E7);
+        assert_eq!(cpu.borrow().get_pc(), 0x12E7);
         cycle.next();
         let state = opcode.as_mut().resume(());
         assert_eq!(state, GeneratorState::Complete(cycle));
-        assert_eq!(cpu.borrow().get_pc(), 0x21E7);
+        assert_eq!(cpu.borrow().get_pc(), 0x11E7);
     }
 
     #[test]
     fn test_relative_no_overflow() {
         let mut cpu = NES::mock();
         cpu.assign_flag(Flag::C, false);
-        cpu.set_pc(0x2204);
+        cpu.set_pc(0x1204);
         cpu.set_mem(cpu.get_pc(), 30i8 as u8);
         let cpu = RefCell::new(cpu);
         let instruction = BC(Flag::C);
@@ -133,22 +133,22 @@ mod tests {
         let mut opcode = relative(&cpu, instruction);
         let state = opcode.as_mut().resume(());
         assert_eq!(state, GeneratorState::Yielded(cycle));
-        assert_eq!(cpu.borrow().get_pc(), 0x2204);
+        assert_eq!(cpu.borrow().get_pc(), 0x1204);
         cycle.next();
         let state = opcode.as_mut().resume(());
         assert_eq!(state, GeneratorState::Yielded(cycle));
-        assert_eq!(cpu.borrow().get_pc(), 0x2205);
+        assert_eq!(cpu.borrow().get_pc(), 0x1205);
         cycle.next();
         let state = opcode.as_mut().resume(());
         assert_eq!(state, GeneratorState::Complete(cycle));
-        assert_eq!(cpu.borrow().get_pc(), 0x2223);
+        assert_eq!(cpu.borrow().get_pc(), 0x1223);
     }
 
     #[test]
     fn test_relative_no_branch() {
         let mut cpu = NES::mock();
         cpu.assign_flag(Flag::C, true);
-        cpu.set_pc(0x2204);
+        cpu.set_pc(0x1204);
         cpu.set_mem(cpu.get_pc(), 30i8 as u8);
         let cpu = RefCell::new(cpu);
         let instruction = BC(Flag::C);
@@ -160,10 +160,10 @@ mod tests {
         let mut opcode = relative(&cpu, instruction);
         let state = opcode.as_mut().resume(());
         assert_eq!(state, GeneratorState::Yielded(cycle));
-        assert_eq!(cpu.borrow().get_pc(), 0x2204);
+        assert_eq!(cpu.borrow().get_pc(), 0x1204);
         cycle.next();
         let state = opcode.as_mut().resume(());
         assert_eq!(state, GeneratorState::Complete(cycle));
-        assert_eq!(cpu.borrow().get_pc(), 0x2205);
+        assert_eq!(cpu.borrow().get_pc(), 0x1205);
     }
 }

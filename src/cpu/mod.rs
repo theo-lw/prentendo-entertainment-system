@@ -1,19 +1,21 @@
 mod instructions;
+mod interrupt;
+mod oamdma;
 mod opcode_generators;
 pub mod variables;
-mod oamdma;
 
 use crate::state::CPU;
+use crate::state::cpu::InterruptState;
 use instructions::{
     adc::ADC, and::AND, asl::ASL, bcf::BC, bit::BIT, bsf::BS, clf::CL, cpr::CP, dec::DEC, der::DE,
     eor::EOR, inc::INC, inr::IN, ldr::LD, lsr::LSR, nop::NOP, ora::ORA, phr::PH, plr::PL, rol::ROL,
     ror::ROR, sbc::SBC, sef::SE, str::ST, trr::T,
 };
+use oamdma::oamdma;
 use opcode_generators::{
     absolute, absolute_x, absolute_y, immediate, implied, indirect, indirect_x, indirect_y,
     relative, zero, zero_x, zero_y, CPUCycle,
 };
-use oamdma::oamdma;
 use std::{
     cell::RefCell,
     ops::{Generator, GeneratorState},
@@ -46,12 +48,13 @@ pub fn cycle<'a, S: CPU>(
     cpu: &'a RefCell<S>,
 ) -> impl Generator<Yield = InstructionState, Return = ()> + 'a {
     move || loop {
-        let mut instruction = get_instruction(cpu);
+        let mut instruction_generator = get_instruction(cpu);
+        let mut pending_interrupt = InterruptState::None;
         'opcode: loop {
-            let cycle_state = instruction.as_mut().resume(());
+            let cycle_state = instruction_generator.as_mut().resume(());
             if cpu.borrow().is_oam_dma_triggered() {
-                let mut oamdma = oamdma(cpu);
-                while let GeneratorState::Yielded(_) = Pin::new(&mut oamdma).resume(()) {
+                let mut oamdma_generator = oamdma(cpu);
+                while let GeneratorState::Yielded(_) = Pin::new(&mut oamdma_generator).resume(()) {
                     yield InstructionState::OAMDMA;
                     cpu.borrow_mut().toggle_odd_even();
                 }
@@ -61,6 +64,7 @@ pub fn cycle<'a, S: CPU>(
                 GeneratorState::Yielded(x) => {
                     yield InstructionState::Yielded(x);
                     cpu.borrow_mut().toggle_odd_even();
+                    pending_interrupt = cpu.borrow().get_pending_interrupt();
                 }
                 GeneratorState::Complete(x) => {
                     yield InstructionState::Complete(x);
@@ -68,6 +72,21 @@ pub fn cycle<'a, S: CPU>(
                     break 'opcode;
                 }
             }
+        }
+        if pending_interrupt == InterruptState::NMI {
+            let mut nmi_generator = interrupt::nmi(cpu);
+            while let GeneratorState::Yielded(_) = Pin::new(&mut nmi_generator).resume(()) {
+                yield InstructionState::NMI;
+                cpu.borrow_mut().toggle_odd_even();
+            }
+            cpu.borrow_mut().clear_interrupt();
+        } else if pending_interrupt == InterruptState::IRQ {
+            let mut irq_generator = interrupt::irq(cpu);
+            while let GeneratorState::Yielded(_) = Pin::new(&mut irq_generator).resume(()) {
+                yield InstructionState::IRQ;
+                cpu.borrow_mut().toggle_odd_even();
+            }
+            cpu.borrow_mut().clear_interrupt();
         }
     }
 }
@@ -294,6 +313,8 @@ fn get_instruction<'a, S: CPU>(
 /// Represents the state of an instruction
 pub enum InstructionState {
     OAMDMA,
+    NMI,
+    IRQ,
     Yielded(CPUCycle),
     Complete(CPUCycle),
 }

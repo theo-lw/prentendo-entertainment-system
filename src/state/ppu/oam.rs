@@ -1,13 +1,13 @@
 pub struct OAM {
     memory: [u8; 256],
-    pub addr: u8
+    pub addr: u8,
 }
 
 impl OAM {
     pub fn new() -> Self {
         OAM {
             memory: [0; 256],
-            addr: 0
+            addr: 0,
         }
     }
 

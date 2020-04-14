@@ -21,7 +21,7 @@ impl MappedRegisters {
             ppu_scroll: 0,
             ppu_addr: 0,
             ppu_data: 0,
-            open_bus: Cell::new(0)
+            open_bus: Cell::new(0),
         }
     }
 
