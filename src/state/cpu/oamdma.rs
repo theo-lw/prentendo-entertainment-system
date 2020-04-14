@@ -1,4 +1,5 @@
 use super::OAMDMA;
+use crate::state::ppu::oam::OAM;
 use crate::state::NES;
 
 impl OAMDMA for NES {
@@ -10,8 +11,8 @@ impl OAMDMA for NES {
         self.cpu.oam_dma
     }
 
-    fn write_oam(&mut self, val: u8) {
-        self.ppu.oam.write(val);
+    fn write_oam(&mut self, offset: usize, val: u8) {
+        self.ppu.oam.memory[offset.wrapping_add(usize::from(self.ppu.oam.addr)) % OAM::SIZE] = val;
     }
 
     fn toggle_odd_even(&mut self) {

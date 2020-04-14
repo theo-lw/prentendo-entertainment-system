@@ -15,7 +15,7 @@ pub fn oamdma<'a, S: OAMDMA + Memory>(
                 .borrow()
                 .get_mem(u16::from_be_bytes([cpu.borrow().get_oam_dma(), i]));
             yield;
-            cpu.borrow_mut().write_oam(byte);
+            cpu.borrow_mut().write_oam(usize::from(i), byte);
             yield;
         }
     }

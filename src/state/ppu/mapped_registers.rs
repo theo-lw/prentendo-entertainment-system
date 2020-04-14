@@ -16,10 +16,7 @@ impl MappedRegisters for NES {
         let old_nmi_output = self.ppu.ctrl.should_output_nmi();
         self.ppu.ctrl.set(val);
         self.ppu.open_bus.set(val);
-        if !old_nmi_output
-            && self.ppu.ctrl.should_output_nmi()
-            && self.ppu.status.vblank_started.get()
-        {
+        if !old_nmi_output && self.ppu.ctrl.should_output_nmi() && self.ppu.status.vblank.get() {
             self.trigger_nmi();
         }
     }
@@ -32,10 +29,10 @@ impl MappedRegisters for NES {
     }
     fn get_ppu_status(&self) -> u8 {
         let mut result = self.ppu.open_bus.get();
-        result.assign_bit(7, self.ppu.status.vblank_started.get());
+        result.assign_bit(7, self.ppu.status.vblank.get());
         result.assign_bit(6, self.ppu.status.sprite0_hit);
         result.assign_bit(5, self.ppu.status.sprite_overflow);
-        self.ppu.status.vblank_started.set(false);
+        self.ppu.status.vblank.set(false);
         self.ppu.internal_registers.w.set(false);
         self.ppu.open_bus.set(result);
         result
@@ -49,7 +46,9 @@ impl MappedRegisters for NES {
         self.ppu.open_bus.set(val);
     }
     fn get_oam_data(&self) -> u8 {
-        self.ppu.open_bus.set(self.ppu.oam.read());
+        self.ppu
+            .open_bus
+            .set(self.ppu.oam.memory[usize::from(self.ppu.oam.addr)]);
         self.ppu.open_bus.get()
     }
     fn set_oam_data(&mut self, val: u8) {
@@ -58,7 +57,8 @@ impl MappedRegisters for NES {
             return;
         }
         self.ppu.open_bus.set(val);
-        self.ppu.oam.write(val);
+        self.ppu.oam.memory[usize::from(self.ppu.oam.addr)] = val;
+        self.ppu.oam.addr = self.ppu.oam.addr.wrapping_add(1);
     }
     fn get_ppu_scroll(&self) -> u8 {
         self.ppu.open_bus.get()
@@ -106,12 +106,12 @@ impl MappedRegisters for NES {
     fn get_ppu_data(&self) -> u8 {
         let vram_addr: u16 = self.ppu.internal_registers.v.get();
         let result: u8 = if vram_addr < 0x3EFF {
-            let val = self.ppu.open_bus.get();
-            self.ppu.open_bus.set(self.get(vram_addr));
+            let val = self.ppu.data_buffer.get();
+            self.ppu.data_buffer.set(self.get(vram_addr));
             val
         } else {
             let val = self.get(self.ppu.internal_registers.v.get());
-            self.ppu.open_bus.set(self.get(vram_addr - 0x100));
+            self.ppu.data_buffer.set(self.get(vram_addr - 0x100));
             val
         };
         self.ppu.open_bus.set(result);
@@ -200,7 +200,7 @@ impl PPUMASK {
 }
 
 pub struct PPUSTATUS {
-    pub vblank_started: Cell<bool>,
+    pub vblank: Cell<bool>,
     pub sprite0_hit: bool,
     pub sprite_overflow: bool,
 }
@@ -208,7 +208,7 @@ pub struct PPUSTATUS {
 impl PPUSTATUS {
     pub fn new() -> Self {
         PPUSTATUS {
-            vblank_started: Cell::new(false),
+            vblank: Cell::new(false),
             sprite0_hit: false,
             sprite_overflow: false,
         }

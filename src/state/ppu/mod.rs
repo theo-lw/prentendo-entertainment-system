@@ -4,8 +4,9 @@ mod cycle_status;
 mod internal_registers;
 mod mapped_registers;
 mod memory;
-mod oam;
+pub mod oam;
 mod ram;
+mod vblank;
 
 use cycle_status::CycleStatus;
 use internal_registers::InternalRegisters;

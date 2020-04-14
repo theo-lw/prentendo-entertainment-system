@@ -58,7 +58,7 @@ pub trait OAMDMA {
     fn is_oam_dma_triggered(&self) -> bool;
     fn untrigger_oam_dma(&mut self);
     fn get_oam_dma(&self) -> u8;
-    fn write_oam(&mut self, val: u8);
+    fn write_oam(&mut self, offset: usize, val: u8);
     fn toggle_odd_even(&mut self);
     fn is_odd_cycle(&self) -> bool;
 }

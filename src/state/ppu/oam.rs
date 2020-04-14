@@ -1,22 +1,15 @@
 pub struct OAM {
-    memory: [u8; 256],
+    pub memory: [u8; Self::SIZE],
     pub addr: u8,
 }
 
 impl OAM {
+    pub const SIZE: usize = 256;
+
     pub fn new() -> Self {
         OAM {
-            memory: [0; 256],
+            memory: [0; Self::SIZE],
             addr: 0,
         }
-    }
-
-    pub fn read(&self) -> u8 {
-        self.memory[usize::from(self.addr)]
-    }
-
-    pub fn write(&mut self, val: u8) {
-        self.memory[usize::from(self.addr)] = val;
-        self.addr = self.addr.wrapping_add(1);
     }
 }
