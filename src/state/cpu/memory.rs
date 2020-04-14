@@ -1,4 +1,5 @@
 use super::{Memory, Registers};
+use crate::state::ppu::MappedRegisters;
 use crate::state::NES;
 
 impl Memory for NES {
@@ -11,7 +12,16 @@ impl Memory for NES {
     fn get_mem(&self, addr: u16) -> u8 {
         self.cpu.open_bus.set(match addr {
             0..=0x1FFF => self.cpu.internal_ram[usize::from(addr % 0x800)],
-            0x2000..=0x3FFF => self.ppu.cpu_get(0x2000 + (addr - 0x2000) % 8),
+            0x2000..=0x3FFF => match (addr - 0x2000) % 8 {
+                0 => self.get_ppu_ctrl(),
+                1 => self.get_ppu_mask(),
+                2 => self.get_ppu_status(),
+                3 => self.get_oam_addr(), 
+                4 => self.get_oam_data(),
+                5 => self.get_ppu_scroll(),
+                6 => self.get_ppu_addr(),
+                7 => self.get_ppu_data(),
+            }
             0x4000 => self.apu.sq1_vol,
             0x4001 => self.apu.sq1_sweep,
             0x4002 => self.apu.sq1_lo,
@@ -45,7 +55,16 @@ impl Memory for NES {
     fn set_mem(&mut self, addr: u16, val: u8) {
         match addr {
             0..=0x1FFF => self.cpu.internal_ram[usize::from(addr % 0x800)] = val,
-            0x2000..=0x3FFF => self.ppu.cpu_set(0x2000 + (addr - 0x2000) % 8, val),
+            0x2000..=0x3FFF => match (addr - 0x2000) % 8 {
+                0 => self.set_ppu_ctrl(val),
+                1 => self.set_ppu_mask(val),
+                2 => self.set_ppu_status(val),
+                3 => self.set_oam_addr(val), 
+                4 => self.set_oam_data(val),
+                5 => self.set_ppu_scroll(val),
+                6 => self.set_ppu_addr(val),
+                7 => self.set_ppu_data(val),
+            }
             0x4000 => self.apu.sq1_vol = val,
             0x4001 => self.apu.sq1_sweep = val,
             0x4002 => self.apu.sq1_lo = val,

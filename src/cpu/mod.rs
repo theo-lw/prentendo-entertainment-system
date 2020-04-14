@@ -4,8 +4,8 @@ mod oamdma;
 mod opcode_generators;
 pub mod variables;
 
-use crate::state::CPU;
 use crate::state::cpu::InterruptState;
+use crate::state::CPU;
 use instructions::{
     adc::ADC, and::AND, asl::ASL, bcf::BC, bit::BIT, bsf::BS, clf::CL, cpr::CP, dec::DEC, der::DE,
     eor::EOR, inc::INC, inr::IN, ldr::LD, lsr::LSR, nop::NOP, ora::ORA, phr::PH, plr::PL, rol::ROL,
@@ -64,6 +64,7 @@ pub fn cycle<'a, S: CPU>(
                 GeneratorState::Yielded(x) => {
                     yield InstructionState::Yielded(x);
                     cpu.borrow_mut().toggle_odd_even();
+                    // we check the second-last cyle of each instruction for an interrupt
                     pending_interrupt = cpu.borrow().get_pending_interrupt();
                 }
                 GeneratorState::Complete(x) => {
@@ -79,15 +80,14 @@ pub fn cycle<'a, S: CPU>(
                 yield InstructionState::NMI;
                 cpu.borrow_mut().toggle_odd_even();
             }
-            cpu.borrow_mut().clear_interrupt();
         } else if pending_interrupt == InterruptState::IRQ {
             let mut irq_generator = interrupt::irq(cpu);
             while let GeneratorState::Yielded(_) = Pin::new(&mut irq_generator).resume(()) {
                 yield InstructionState::IRQ;
                 cpu.borrow_mut().toggle_odd_even();
             }
-            cpu.borrow_mut().clear_interrupt();
         }
+        cpu.borrow_mut().clear_interrupt();
     }
 }
 

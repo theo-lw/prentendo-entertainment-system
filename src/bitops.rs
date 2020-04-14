@@ -3,6 +3,7 @@ pub trait BitOps {
     fn is_bit_set(&self, val: usize) -> bool;
     fn set_bit(&mut self, val: usize);
     fn clear_bit(&mut self, val: usize);
+    fn assign_bit(&mut self, bit: usize, val: bool);
     fn replace_bits(&self, mask: Self, new_bits: Self) -> Self;
 }
 
@@ -22,6 +23,15 @@ macro_rules! bitops_impl {
             #[inline]
             fn clear_bit(&mut self, val: usize) {
                 *self &= !(1 << val);
+            }
+
+            #[inline]
+            fn assign_bit(&mut self, bit: usize, val: bool) {
+                if val {
+                    self.set_bit(bit);
+                } else {
+                    self.clear_bit(bit);
+                }
             }
 
             #[inline]

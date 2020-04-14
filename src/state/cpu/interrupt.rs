@@ -1,7 +1,7 @@
 use super::{Interrupt, InterruptState};
 use crate::cpu::variables::Flag;
-use crate::state::NES;
 use crate::state::cpu::Registers;
+use crate::state::NES;
 
 impl Interrupt for NES {
     fn get_pending_interrupt(&self) -> InterruptState {

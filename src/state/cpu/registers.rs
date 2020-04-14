@@ -65,11 +65,7 @@ impl Registers for NES {
         self.cpu.p.is_bit_set(flag as usize)
     }
     fn assign_flag(&mut self, flag: Flag, val: bool) {
-        if val {
-            self.cpu.p.set_bit(flag as usize);
-        } else {
-            self.cpu.p.clear_bit(flag as usize);
-        }
+        self.cpu.p.assign_bit(flag as usize, val);
         // this bit is always set
         self.cpu.p.set_bit(Flag::U as usize);
         // this bit doesn't actually exist in the NES, so we let it be zero

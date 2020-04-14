@@ -7,12 +7,31 @@ mod memory;
 mod oam;
 mod ram;
 
-use crate::bitops::BitOps;
 use cycle_status::CycleStatus;
 use internal_registers::InternalRegisters;
-use mapped_registers::MappedRegisters;
+use mapped_registers::{PPUCTRL, PPUMASK, PPUSTATUS};
 use oam::OAM;
 use ram::RAM;
+use std::cell::Cell;
+
+pub trait MappedRegisters {
+    fn get_ppu_ctrl(&self) -> u8;
+    fn set_ppu_ctrl(&mut self, val: u8);
+    fn get_ppu_mask(&self) -> u8;
+    fn set_ppu_mask(&mut self, val: u8);
+    fn get_ppu_status(&self) -> u8;
+    fn set_ppu_status(&mut self, val: u8);
+    fn get_oam_addr(&self) -> u8;
+    fn set_oam_addr(&mut self, val: u8);
+    fn get_oam_data(&self) -> u8;
+    fn set_oam_data(&mut self, val: u8);
+    fn get_ppu_scroll(&self) -> u8;
+    fn set_ppu_scroll(&mut self, val: u8);
+    fn get_ppu_addr(&self) -> u8;
+    fn set_ppu_addr(&mut self, val: u8);
+    fn get_ppu_data(&self) -> u8;
+    fn set_ppu_data(&mut self, val: u8);
+}
 
 pub trait Background {
     fn get_nametable_addr(&self) -> u16;
@@ -32,13 +51,22 @@ pub trait Cycle {
     fn get_cycle(&self) -> usize;
 }
 
+pub trait VBlank {
+    fn start_vblank(&mut self);
+    fn end_vlbank(&mut self);
+}
+
 /// Represents the PPU's state
 pub struct PPUState {
     ram: RAM,
     pub oam: OAM,
     current_cycle: CycleStatus,
     internal_registers: InternalRegisters,
-    mapped_registers: MappedRegisters,
+    ctrl: PPUCTRL,
+    mask: PPUMASK,
+    status: PPUSTATUS,
+    data_buffer: Cell<u8>,
+    pub open_bus: Cell<u8>,
 }
 
 impl PPUState {
@@ -53,106 +81,11 @@ impl PPUState {
             oam: OAM::new(),
             current_cycle: CycleStatus::new(),
             internal_registers: InternalRegisters::new(),
-            mapped_registers: MappedRegisters::new(),
-        }
-    }
-
-    pub fn cpu_get(&self, addr: u16) -> u8 {
-        self.mapped_registers.open_bus.set(match addr {
-            0x2000 => self.mapped_registers.open_bus.get(),
-            0x2001 => self.mapped_registers.open_bus.get(),
-            0x2002 => {
-                self.internal_registers.w.set(false);
-                self.mapped_registers.ppu_status
-            }
-            0x2003 => self.mapped_registers.open_bus.get(),
-            0x2004 => self.oam.read(),
-            0x2005 => self.mapped_registers.open_bus.get(),
-            0x2006 => self.mapped_registers.open_bus.get(),
-            0x2007 => {
-                if self.current_cycle.is_on_render_line() {
-                    self.internal_registers.increment_y();
-                    self.internal_registers.increment_x();
-                } else {
-                    self.internal_registers.v.set(
-                        self.internal_registers
-                            .v
-                            .get()
-                            .wrapping_add(self.mapped_registers.get_vram_increment()),
-                    );
-                }
-                self.mapped_registers.ppu_data
-            }
-            _ => unreachable!(),
-        });
-        self.mapped_registers.open_bus.get()
-    }
-
-    pub fn cpu_set(&mut self, addr: u16, val: u8) {
-        self.mapped_registers.open_bus.set(val);
-        match addr {
-            0x2000 => {
-                self.internal_registers
-                    .t
-                    .replace_bits(0b11_00000_00000, u16::from(val & 0b11) << 10);
-                self.mapped_registers.ppu_ctrl = val;
-            }
-            0x2001 => self.mapped_registers.ppu_mask = val,
-            0x2002 => {}
-            0x2003 => self.oam.addr = val,
-            0x2004 => {
-                // "for emulation purposes it's probably best to ignore writes during rendering"
-                if self.current_cycle.is_on_render_line() {
-                    return;
-                }
-                self.oam.write(val);
-            }
-            0x2005 => {
-                if self.internal_registers.w.get() {
-                    self.internal_registers.t.replace_bits(
-                        0b111_00_11111_00000,
-                        (u16::from(val & 0b111) << 12) + (u16::from(val & 0b11111_000) << 5),
-                    );
-                    self.internal_registers.w.set(false);
-                } else {
-                    self.internal_registers
-                        .t
-                        .replace_bits(0b11111, u16::from(val & 0b11111_000) >> 3);
-                    self.internal_registers.x = val & 0b111;
-                    self.internal_registers.w.set(true);
-                }
-                self.mapped_registers.ppu_scroll = val;
-            }
-            0x2006 => {
-                if self.internal_registers.w.get() {
-                    self.internal_registers
-                        .t
-                        .replace_bits(0b111_11111, val as u16);
-                    self.internal_registers.v.set(self.internal_registers.t);
-                    self.internal_registers.w.set(false);
-                } else {
-                    self.internal_registers
-                        .t
-                        .replace_bits(0b111_11_11000_00000, u16::from(val & 0b1_11111) << 8);
-                    self.internal_registers.w.set(true);
-                }
-                self.mapped_registers.ppu_addr = val;
-            }
-            0x2007 => {
-                if self.current_cycle.is_on_render_line() {
-                    self.internal_registers.increment_y();
-                    self.internal_registers.increment_x();
-                } else {
-                    self.internal_registers.v.set(
-                        self.internal_registers
-                            .v
-                            .get()
-                            .wrapping_add(self.mapped_registers.get_vram_increment()),
-                    );
-                }
-                self.mapped_registers.ppu_data = val;
-            }
-            _ => unreachable!(),
+            ctrl: PPUCTRL::new(),
+            mask: PPUMASK::new(),
+            status: PPUSTATUS::new(),
+            data_buffer: Cell::new(0),
+            open_bus: Cell::new(0),
         }
     }
 }

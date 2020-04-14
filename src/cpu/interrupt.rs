@@ -9,6 +9,7 @@ use std::ops::Generator;
 const NMI_VECTOR: u16 = 0xFFFE;
 const IRQ_VECTOR: u16 = 0xFFFA;
 
+/// Creates an NMI interrupt
 pub fn nmi<'a, S: Memory + Stack + Registers>(
     cpu: &'a RefCell<S>,
 ) -> impl Generator<Yield = (), Return = ()> + 'a {
@@ -34,6 +35,7 @@ pub fn nmi<'a, S: Memory + Stack + Registers>(
     }
 }
 
+/// Creates an IRQ interrupt
 pub fn irq<'a, S: Memory + Stack + Registers>(
     cpu: &'a RefCell<S>,
 ) -> impl Generator<Yield = (), Return = ()> + 'a {
