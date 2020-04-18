@@ -57,7 +57,7 @@ impl InternalRegisters {
             .set(self.v.get().replace_bits(0b111_10_11111_00000, self.t));
     }
 
-    pub fn fine_y(&self) -> u16 {
+    pub fn get_fine_y(&self) -> u16 {
         (self.v.get() & 0b111_00_00000_00000) >> 12
     }
 }

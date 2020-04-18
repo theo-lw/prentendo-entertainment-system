@@ -1,7 +1,11 @@
 use super::Background;
+use crate::bitops::BitOps;
 use crate::state::NES;
 
 impl Background for NES {
+    fn should_render_background(&self) -> bool {
+        self.ppu.mask.should_render_background()
+    }
     fn get_nametable_addr(&self) -> u16 {
         0x2000 | (self.ppu.internal_registers.v.get() & 0x0FFF)
     }
@@ -12,18 +16,11 @@ impl Background for NES {
             | ((self.ppu.internal_registers.v.get() >> 2) & 0x07)
     }
     fn get_background_tile_addr_low(&self, index: u8) -> u16 {
-        self.ppu
-            .mapped_registers
-            .get_background_pattern_table_addr()
+        self.ppu.ctrl.get_background_pattern_table_addr()
             + ((index as u16) << 4)
-            + self.ppu.internal_registers.fine_y()
+            + self.ppu.internal_registers.get_fine_y()
     }
     fn get_background_tile_addr_high(&self, index: u8) -> u16 {
-        self.ppu
-            .mapped_registers
-            .get_background_pattern_table_addr()
-            + ((index as u16) << 4)
-            + 0b1000
-            + self.ppu.internal_registers.fine_y()
+        self.get_background_tile_addr_low(index) + 0b1000
     }
 }

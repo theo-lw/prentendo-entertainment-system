@@ -47,6 +47,8 @@ impl Memory for NES {
                 }
             }
             0x3F00..=0x3FFF => self.ppu.ram.palatte_ram[usize::from(addr - 0x3F00) % 0x20],
+            // anything outside the given range is unreachable because the internal vram address
+            // only goes up to 12 bits
             _ => unreachable!(),
         }
     }
@@ -96,6 +98,8 @@ impl Memory for NES {
                     _ => unreachable!(),
                 }
             }
+            // anything outside the given range is unreachable because the internal vram address
+            // only goes up to 12 bits
             0x3F00..=0x3FFF => self.ppu.ram.palatte_ram[usize::from(addr - 0x3F00) % 0x20] = val,
             _ => unreachable!(),
         }

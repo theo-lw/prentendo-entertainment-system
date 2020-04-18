@@ -172,8 +172,40 @@ impl PPUCTRL {
         }
     }
 
+    pub fn get_sprite_height(&self) -> SpriteHeight {
+        if self.register.is_bit_set(5) {
+            SpriteHeight::Sixteen
+        } else {
+            SpriteHeight::Eight
+        }
+    }
+
     pub fn should_output_nmi(&self) -> bool {
         self.register.is_bit_set(7)
+    }
+}
+
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum SpriteHeight {
+    Eight,
+    Sixteen,
+}
+
+impl From<SpriteHeight> for u8 {
+    fn from(height: SpriteHeight) -> u8 {
+        match height {
+            SpriteHeight::Eight => 8,
+            SpriteHeight::Sixteen => 16,
+        }
+    }
+}
+
+impl From<SpriteHeight> for usize {
+    fn from(height: SpriteHeight) -> usize {
+        match height {
+            SpriteHeight::Eight => 8,
+            SpriteHeight::Sixteen => 16,
+        }
     }
 }
 

@@ -6,11 +6,12 @@ mod mapped_registers;
 mod memory;
 pub mod oam;
 mod ram;
+mod sprites;
 mod vblank;
 
 use cycle_status::CycleStatus;
 use internal_registers::InternalRegisters;
-use mapped_registers::{PPUCTRL, PPUMASK, PPUSTATUS};
+use mapped_registers::{SpriteHeight, PPUCTRL, PPUMASK, PPUSTATUS};
 use oam::OAM;
 use ram::RAM;
 use std::cell::Cell;
@@ -35,10 +36,23 @@ pub trait MappedRegisters {
 }
 
 pub trait Background {
+    fn should_render_background(&self) -> bool;
     fn get_nametable_addr(&self) -> u16;
     fn get_attribute_addr(&self) -> u16;
     fn get_background_tile_addr_low(&self, index: u8) -> u16;
     fn get_background_tile_addr_high(&self, index: u8) -> u16;
+}
+
+pub trait Sprites {
+    fn should_render_sprites(&self) -> bool;
+    fn get_sprite_height(&self) -> SpriteHeight;
+    fn get_sprite_tile_addr_low(&self, sprite_index: u8, y_offset: u8) -> u16;
+    fn get_sprite_tile_addr_high(&self, sprite_index: u8, y_offset: u8) -> u16;
+    fn read_oam(&self, tile: u8, offset: u8) -> u8;
+    fn trigger_sprite_overflow(&mut self);
+    fn trigger_sprite_zero(&mut self);
+    fn clear_sprite_overflow(&mut self);
+    fn clear_sprite_zero(&mut self);
 }
 
 pub trait Memory {

@@ -12,9 +12,8 @@ impl Cycle for NES {
                 return;
             }
             self.ppu.current_cycle.is_odd_frame = !self.ppu.current_cycle.is_odd_frame;
-            if self.ppu.current_cycle.is_odd_frame
-                && self.ppu.mapped_registers.should_render_sprites()
-                || self.ppu.mapped_registers.should_render_background()
+            if self.ppu.current_cycle.is_odd_frame && self.ppu.mask.should_render_sprites()
+                || self.ppu.mask.should_render_background()
             {
                 self.ppu.current_cycle.scanline += 1;
             }
