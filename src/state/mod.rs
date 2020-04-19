@@ -30,6 +30,11 @@ use crate::cartridge::mapper0::Mapper0;
 
 /// Trait representing the CPU
 pub trait CPU: cpu::Registers + cpu::Memory + cpu::Stack + cpu::OAMDMA + cpu::Interrupt {}
+impl CPU for NES {}
+
+/// Trait representing the PPU
+pub trait PPU: ppu::Memory + ppu::Cycle + ppu::VBlank + ppu::Sprites + ppu::Background {}
+impl PPU for NES {}
 
 /// The struct holding all of the NES's internal state.
 pub struct NES {
@@ -62,5 +67,3 @@ impl NES {
         }
     }
 }
-
-impl CPU for NES {}

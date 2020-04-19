@@ -37,7 +37,7 @@ impl MappedRegisters for NES {
         self.ppu.open_bus.set(result);
         result
     }
-    fn set_ppu_status(&mut self, val: u8) {} // writes don't do anything
+    fn set_ppu_status(&mut self, _: u8) {} // writes don't do anything
     fn get_oam_addr(&self) -> u8 {
         self.ppu.open_bus.get()
     }

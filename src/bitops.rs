@@ -36,7 +36,7 @@ macro_rules! bitops_impl {
 
             #[inline]
             fn replace_bits(&self, mask: Self, new_bits: Self) -> Self {
-                (*self & !mask) | (*self & new_bits)
+                (self & !mask) | (mask & new_bits)
             }
         }
     };
@@ -70,5 +70,11 @@ mod tests {
         byte.clear_bit(5);
         byte.clear_bit(0);
         assert_eq!(byte, 0b0000_1100);
+    }
+
+    #[test]
+    fn test_replace_bits() {
+        let byte: u16 = 0b00000_00100;
+        assert_eq!(byte.replace_bits(0b11111_00000, 0b10010_11111), 0b10010_00100);
     }
 }

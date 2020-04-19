@@ -23,4 +23,7 @@ impl Background for NES {
     fn get_background_tile_addr_high(&self, index: u8) -> u16 {
         self.get_background_tile_addr_low(index) + 0b1000
     }
+    fn get_fine_x(&self) -> u8 {
+        self.ppu.internal_registers.x
+    }
 }

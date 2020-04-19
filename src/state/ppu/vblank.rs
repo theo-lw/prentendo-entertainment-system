@@ -14,3 +14,16 @@ impl VBlank for NES {
         self.ppu.status.vblank.set(false);
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::state::cpu::InterruptState;
+
+    #[test]
+    fn test_start_vblank() {
+        let mut nes = NES::mock();
+        nes.start_vblank();
+        assert_eq!(nes.ppu.status.vblank.get(), true);
+    }
+}

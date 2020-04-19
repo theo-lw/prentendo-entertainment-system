@@ -41,6 +41,7 @@ pub trait Background {
     fn get_attribute_addr(&self) -> u16;
     fn get_background_tile_addr_low(&self, index: u8) -> u16;
     fn get_background_tile_addr_high(&self, index: u8) -> u16;
+    fn get_fine_x(&self) -> u8;
 }
 
 pub trait Sprites {
@@ -63,7 +64,11 @@ pub trait Memory {
 pub trait Cycle {
     fn update_cycle(&mut self);
     fn get_scanline(&self) -> usize;
-    fn get_cycle(&self) -> usize;
+    fn get_tick(&self) -> usize;
+    fn increment_x(&mut self);
+    fn increment_y(&mut self);
+    fn reset_x(&mut self);
+    fn reset_y(&mut self);
 }
 
 pub trait VBlank {

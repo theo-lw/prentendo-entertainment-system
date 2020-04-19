@@ -12,7 +12,7 @@ impl CycleStatus {
     pub fn new() -> Self {
         CycleStatus {
             tick: 0,
-            scanline: 0,
+            scanline: 261,
             is_odd_frame: false,
         }
     }
