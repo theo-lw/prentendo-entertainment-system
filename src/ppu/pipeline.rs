@@ -1,1 +1,109 @@
-pub struct Pipeline {}
+use super::background_evaluation::BackgroundTile;
+use super::sprite_evaluation::Sprite;
+
+pub struct Pipeline {
+    sprites: Option<Vec<Sprite>>,
+    background_shift_high: Option<u16>,
+    background_shift_low: Option<u16>,
+    background_attribute_current: Option<u8>,
+    background_attribute_next: Option<u8>,
+    background_shift_count: u8,
+}
+
+impl Pipeline {
+    pub fn new() -> Self {
+        Pipeline {
+            sprites: None,
+            background_shift_low: None,
+            background_shift_high: None,
+            background_attribute_next: None,
+            background_attribute_current: None,
+            background_shift_count: 0,
+        }
+    }
+
+    pub fn get_next_palette_addr(&self, fine_x: u8, fine_y: u8) -> Option<u16> {
+        let background_pixel: Option<u8> = self.background_attribute_current.map(|x| {
+            match ((fine_x + self.background_shift_count) % 8, fine_y) {
+                (0..=3, 0..=3) => x & 0b11,
+                (4..=7, 0..=3) => (x >> 2) & 0b11,
+                (0..=3, 4..=7) => (x >> 4) & 0b11,
+                (4..=7, 4..=7) => (x >> 6) & 0b11,
+                _ => unreachable!(),
+            }
+        });
+
+        let background_palette: Option<u16> = background_pixel.map(|x| 0x3F00 + u16::from(x) * 4);
+
+        let background_palette_index: Option<u16> = map2(
+            self.background_shift_high,
+            self.background_shift_low,
+            |a, b| ((a >> (15 - fine_x)) << 1) | (b >> (15 - fine_x)),
+        );
+
+        let background_palette_addr: Option<u16> =
+            map2(background_palette, background_palette_index, |a, b| a + b);
+
+        let first_active_sprite: Option<&Sprite> = self.sprites.as_ref().and_then(|vec| {
+            for sprite in vec {
+                if sprite.is_active() {
+                    return Some(sprite);
+                }
+            }
+            None
+        });
+
+        match (
+            background_pixel,
+            first_active_sprite.map(|x| x.is_transparent()),
+            first_active_sprite.map(|x| x.is_front_priority()),
+        ) {
+            (Some(_), Some(true), Some(_)) | (Some(_), Some(_), Some(false)) => {
+                background_palette_addr
+            }
+            (Some(0), Some(_), Some(_)) | (Some(_), Some(_), Some(true)) => {
+                first_active_sprite.map(|x| x.get_current_pixel_palette_addr())
+            }
+            _ => None,
+        }
+    }
+
+    pub fn advance_pipeline(&mut self) {
+        self.background_shift_high = self.background_shift_high.map(|x| x << 1);
+        self.background_shift_low = self.background_shift_low.map(|x| x << 1);
+        if let Some(vec) = &mut self.sprites {
+            for sprite in vec {
+                sprite.shift();
+            }
+        }
+        self.background_shift_count += 1;
+    }
+
+    pub fn load_background_tile(&mut self, tile: BackgroundTile) {
+        self.background_attribute_current = self.background_attribute_next;
+        self.background_attribute_next = Some(tile.attribute);
+        self.background_shift_high = match self.background_shift_high {
+            None => Some(u16::from(tile.pattern_high)),
+            Some(x) => Some(x & u16::from(tile.pattern_high)),
+        };
+        self.background_shift_low = match self.background_shift_low {
+            None => Some(u16::from(tile.pattern_low)),
+            Some(x) => Some(x & u16::from(tile.pattern_low)),
+        };
+        self.background_shift_count = 0;
+    }
+
+    pub fn load_sprites(&mut self, sprites: Vec<Sprite>) {
+        self.sprites = Some(sprites);
+    }
+}
+
+fn map2<T, U, V, F: Fn(T, U) -> V>(a: Option<T>, b: Option<U>, f: F) -> Option<V> {
+    match a {
+        Some(x) => match b {
+            Some(y) => Some(f(x, y)),
+            None => None,
+        },
+        None => None,
+    }
+}

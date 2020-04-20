@@ -69,6 +69,11 @@ fn should_clear_flags(scanline: usize, tick: usize) -> bool {
 pub struct Pixel {
     pub x: usize,
     pub y: usize,
+    pub color: Color,
+}
+
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub struct Color {
     pub r: u8,
     pub g: u8,
     pub b: u8,
