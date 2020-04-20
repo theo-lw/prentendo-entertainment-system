@@ -22,7 +22,10 @@ impl Pipeline {
         }
     }
 
-    pub fn get_next_palette_addr(&self, fine_x: u8, fine_y: u8) -> Option<u16> {
+    /// Returns an optional tuple containing:
+    /// 1. The address of the next pixel's palette color
+    /// 2. Whether a sprite0 hit has occurred
+    pub fn get_next_palette_addr(&self, fine_x: u8, fine_y: u8) -> Option<(u16, bool)> {
         let background_pixel: Option<u8> = self.background_attribute_current.map(|x| {
             match ((fine_x + self.background_shift_count) % 8, fine_y) {
                 (0..=3, 0..=3) => x & 0b11,
@@ -58,11 +61,13 @@ impl Pipeline {
             first_active_sprite.map(|x| x.is_transparent()),
             first_active_sprite.map(|x| x.is_front_priority()),
         ) {
-            (Some(_), Some(true), Some(_)) | (Some(_), Some(_), Some(false)) => {
-                background_palette_addr
+            (Some(_), Some(true), Some(_)) => background_palette_addr.map(|x| (x, false)),
+            (Some(a), Some(b), Some(false)) => background_palette_addr.map(|x| (x, a != 0 && !b)),
+            (Some(0), Some(a), Some(_)) => {
+                first_active_sprite.map(|x| (x.get_current_pixel_palette_addr(), false))
             }
-            (Some(0), Some(_), Some(_)) | (Some(_), Some(_), Some(true)) => {
-                first_active_sprite.map(|x| x.get_current_pixel_palette_addr())
+            (Some(a), Some(b), Some(true)) => {
+                first_active_sprite.map(|x| (x.get_current_pixel_palette_addr(), a != 0 && !b))
             }
             _ => None,
         }

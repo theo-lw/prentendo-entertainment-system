@@ -26,4 +26,7 @@ impl Background for NES {
     fn get_fine_x(&self) -> u8 {
         self.ppu.internal_registers.x
     }
+    fn get_fine_y(&self) -> u8 {
+        self.ppu.internal_registers.get_fine_y() as u8
+    }
 }

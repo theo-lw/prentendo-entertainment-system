@@ -42,6 +42,7 @@ pub trait Background {
     fn get_background_tile_addr_low(&self, index: u8) -> u16;
     fn get_background_tile_addr_high(&self, index: u8) -> u16;
     fn get_fine_x(&self) -> u8;
+    fn get_fine_y(&self) -> u8;
 }
 
 pub trait Sprites {
