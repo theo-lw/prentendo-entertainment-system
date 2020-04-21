@@ -1,4 +1,5 @@
 mod background_evaluation;
+pub mod display;
 mod palette;
 mod pipeline;
 mod sprite_evaluation;
@@ -37,7 +38,7 @@ pub fn cycle<'a, T: PPU>(
                 let fine_x = ppu.borrow().get_fine_x();
                 let fine_y = ppu.borrow().get_fine_y();
                 if let Some((addr, sprite0)) = pipeline.get_next_palette_addr(fine_x, fine_y) {
-                    let color: Color = NES_COLORS[ppu.borrow().get(addr)];
+                    let color: Color = NES_COLORS[usize::from(ppu.borrow().get(addr))];
                     if sprite0 && background_enabled && sprites_enabled && tick != 256 {
                         ppu.borrow_mut().trigger_sprite_zero();
                     }

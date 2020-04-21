@@ -12,13 +12,13 @@ impl Memory for NES {
                     0x2000..=0x23FF => self.ppu.ram.nametable_a[usize::from(reduced_addr - 0x2000)],
                     0x2400..=0x27FF => match self.cartridge.get_nametable_mirroring() {
                         NametableMirroring::Horizontal => {
-                            self.ppu.ram.nametable_a[usize::from(reduced_addr - 0x400)]
+                            self.ppu.ram.nametable_a[usize::from(reduced_addr - 0x2400)]
                         }
                         NametableMirroring::Vertical => {
-                            self.ppu.ram.nametable_b[usize::from(reduced_addr - 0x400)]
+                            self.ppu.ram.nametable_b[usize::from(reduced_addr - 0x2400)]
                         }
                         NametableMirroring::FourScreen => {
-                            self.ppu.ram.nametable_b[usize::from(reduced_addr - 0x400)]
+                            self.ppu.ram.nametable_b[usize::from(reduced_addr - 0x2400)]
                         }
                     },
                     0x2800..=0x2BFF => match self.cartridge.get_nametable_mirroring() {

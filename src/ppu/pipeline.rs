@@ -63,7 +63,7 @@ impl Pipeline {
         ) {
             (Some(_), Some(true), Some(_)) => background_palette_addr.map(|x| (x, false)),
             (Some(a), Some(b), Some(false)) => background_palette_addr.map(|x| (x, a != 0 && !b)),
-            (Some(0), Some(a), Some(_)) => {
+            (Some(0), Some(_), Some(_)) => {
                 first_active_sprite.map(|x| (x.get_current_pixel_palette_addr(), false))
             }
             (Some(a), Some(b), Some(true)) => {

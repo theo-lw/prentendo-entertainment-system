@@ -1,5 +1,4 @@
 use super::Background;
-use crate::bitops::BitOps;
 use crate::state::NES;
 
 impl Background for NES {

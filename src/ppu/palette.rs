@@ -1,3 +1,5 @@
+use super::Color;
+
 /// The NES color lookup table. This is hardcoded for now.
 pub const NES_COLORS: [Color; 0x40] = [
     Color {
