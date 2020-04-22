@@ -5,7 +5,6 @@ use std::cell::RefCell;
 use std::ops::Generator;
 
 const SECONDARY_OAM_SIZE: usize = 32;
-const SECONDARY_OAM_SPRITE_COUNT: usize = 8;
 
 pub fn evaluate_sprites<'a, T: Cycle + Sprites + Memory>(
     ppu: &'a RefCell<T>,

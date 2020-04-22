@@ -2,9 +2,13 @@
 use pretendo_entertainment_system::cartridge::ines::{ROMError, INES};
 use pretendo_entertainment_system::cartridge::Mapper;
 use pretendo_entertainment_system::cpu;
+use pretendo_entertainment_system::cpu::InstructionState;
 use pretendo_entertainment_system::ppu;
 use pretendo_entertainment_system::ppu::display::Display;
 use pretendo_entertainment_system::ppu::Pixel;
+use pretendo_entertainment_system::state::cpu::Registers;
+use pretendo_entertainment_system::state::ppu::Cycle;
+use pretendo_entertainment_system::state::ppu::DebugRegisters;
 use pretendo_entertainment_system::state::ppu::Frame;
 use pretendo_entertainment_system::state::NES;
 use sdl2;
@@ -40,6 +44,7 @@ fn main() -> Result<(), ROMError> {
     let mut rom = File::open(opts.rom)?;
     let mapper: Box<dyn Mapper> = INES::from_file(&mut rom)?.to_mapper();
     let nes: RefCell<NES> = RefCell::new(NES::new(mapper));
+    cpu::reset(&nes);
     let mut display: Display = Display::new();
     let mut cpu_generator = cpu::cycle(&nes);
     let mut ppu_generator = ppu::cycle(&nes);
@@ -61,13 +66,14 @@ fn main() -> Result<(), ROMError> {
     let texture_creator: TextureCreator<_> = canvas.texture_creator();
     let mut texture: Texture = texture_creator
         .create_texture_streaming(
-            PixelFormatEnum::RGB888,
+            PixelFormatEnum::RGBA8888,
             Display::WIDTH as u32,
             Display::HEIGHT as u32,
         )
         .expect("Could not create texture!");
 
     'running: loop {
+        // 'keypress: loop {
         for event in event_pump.poll_iter() {
             match event {
                 Event::Quit { .. }
@@ -78,6 +84,7 @@ fn main() -> Result<(), ROMError> {
                 _ => {}
             }
         }
+        // }
 
         if nes.borrow().is_short_frame() {
             Pin::new(&mut cpu_generator).resume(());
@@ -89,7 +96,28 @@ fn main() -> Result<(), ROMError> {
         }
 
         for _ in 0..BASE_CYCLES_PER_FRAME {
-            Pin::new(&mut cpu_generator).resume(());
+            if let GeneratorState::Yielded(InstructionState::Complete(instr)) =
+                Pin::new(&mut cpu_generator).resume(())
+            {
+                /*
+                println!(
+                    "{:04X} A:{:02X} X:{:02X} Y:{:02X} P:{:02X} SP:{:02X} 2002:{:02X} 2007:{:02X} v:{:04X} t:{:04X} tick:{} scanline:{} {:?}",
+                    nes.borrow().get_pc(),
+                    nes.borrow().get_a(),
+                    nes.borrow().get_x(),
+                    nes.borrow().get_y(),
+                    nes.borrow().get_p(),
+                    nes.borrow().get_s(),
+                    nes.borrow().get_2002(),
+                    nes.borrow().get_2007(),
+                    nes.borrow().get_v(),
+                    nes.borrow().get_t(),
+                    nes.borrow().get_tick(),
+                    nes.borrow().get_scanline(),
+                    instr
+                );
+                */
+            }
             for _ in 0..PPU_CYCLES_PER_CPU_CYCLE {
                 run_ppu(&mut ppu_generator, &mut display);
             }
@@ -118,7 +146,10 @@ fn run_ppu(
     display: &mut Display,
 ) {
     match Pin::new(ppu).resume(()) {
-        GeneratorState::Yielded(Some(pixel)) => display.set_pixel(pixel),
+        GeneratorState::Yielded(Some(pixel)) => {
+            //println!("{:?}", pixel);
+            display.set_pixel(pixel)
+        }
         _ => {}
     }
 }

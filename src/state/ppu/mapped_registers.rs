@@ -1,15 +1,38 @@
-use super::{MappedRegisters, Memory};
+use super::{Background, DebugRegisters, MappedRegisters, Memory, Sprites};
 use crate::bitops::BitOps;
 use crate::state::cpu::Interrupt;
 use crate::state::NES;
 use std::cell::Cell;
+
+impl DebugRegisters for NES {
+    fn get_2002(&self) -> u8 {
+        let mut result = self.ppu.open_bus.get();
+        result.assign_bit(7, self.ppu.status.vblank.get());
+        result.assign_bit(6, self.ppu.status.sprite0_hit);
+        result.assign_bit(5, self.ppu.status.sprite_overflow);
+        result
+    }
+
+    fn get_2007(&self) -> u8 {
+        self.ppu.data_buffer.get()
+    }
+
+    fn get_v(&self) -> u16 {
+        self.ppu.internal_registers.v.get()
+    }
+
+    fn get_t(&self) -> u16 {
+        self.ppu.internal_registers.t
+    }
+}
 
 impl MappedRegisters for NES {
     fn get_ppu_ctrl(&self) -> u8 {
         self.ppu.open_bus.get()
     }
     fn set_ppu_ctrl(&mut self, val: u8) {
-        self.ppu
+        self.ppu.internal_registers.t = self
+            .ppu
             .internal_registers
             .t
             .replace_bits(0b11_00000_00000, u16::from(val & 0b11) << 10);
@@ -65,13 +88,14 @@ impl MappedRegisters for NES {
     }
     fn set_ppu_scroll(&mut self, val: u8) {
         if self.ppu.internal_registers.w.get() {
-            self.ppu.internal_registers.t.replace_bits(
+            self.ppu.internal_registers.t = self.ppu.internal_registers.t.replace_bits(
                 0b111_00_11111_00000,
                 (u16::from(val & 0b111) << 12) + (u16::from(val & 0b11111_000) << 5),
             );
             self.ppu.internal_registers.w.set(false);
         } else {
-            self.ppu
+            self.ppu.internal_registers.t = self
+                .ppu
                 .internal_registers
                 .t
                 .replace_bits(0b11111, u16::from(val & 0b11111_000) >> 3);
@@ -85,7 +109,8 @@ impl MappedRegisters for NES {
     }
     fn set_ppu_addr(&mut self, val: u8) {
         if self.ppu.internal_registers.w.get() {
-            self.ppu
+            self.ppu.internal_registers.t = self
+                .ppu
                 .internal_registers
                 .t
                 .replace_bits(0b111_11111, val as u16);
@@ -95,7 +120,8 @@ impl MappedRegisters for NES {
                 .set(self.ppu.internal_registers.t);
             self.ppu.internal_registers.w.set(false);
         } else {
-            self.ppu
+            self.ppu.internal_registers.t = self
+                .ppu
                 .internal_registers
                 .t
                 .replace_bits(0b111_11_11000_00000, u16::from(val & 0b1_11111) << 8);
@@ -105,21 +131,34 @@ impl MappedRegisters for NES {
     }
     fn get_ppu_data(&self) -> u8 {
         let vram_addr: u16 = self.ppu.internal_registers.v.get();
+        // make the read
         let result: u8 = if vram_addr < 0x3EFF {
             let val = self.ppu.data_buffer.get();
             self.ppu.data_buffer.set(self.get(vram_addr));
             val
         } else {
-            let val = self.get(self.ppu.internal_registers.v.get());
             self.ppu.data_buffer.set(self.get(vram_addr - 0x100));
-            val
+            self.get(vram_addr)
         };
+        // increment address
+        if self.ppu.current_cycle.is_on_render_line() && (self.should_render_sprites() || self.should_render_background()) {
+            self.ppu.internal_registers.increment_y();
+            self.ppu.internal_registers.increment_x();
+        } else {
+            self.ppu.internal_registers.v.set(
+                self.ppu
+                    .internal_registers
+                    .v
+                    .get()
+                    .wrapping_add(self.ppu.ctrl.get_vram_increment()),
+            );
+        }
         self.ppu.open_bus.set(result);
         result
     }
     fn set_ppu_data(&mut self, val: u8) {
         self.set(self.ppu.internal_registers.v.get(), val);
-        if self.ppu.current_cycle.is_on_render_line() {
+        if self.ppu.current_cycle.is_on_render_line() && (self.should_render_sprites() || self.should_render_background()) {
             self.ppu.internal_registers.increment_y();
             self.ppu.internal_registers.increment_x();
         } else {

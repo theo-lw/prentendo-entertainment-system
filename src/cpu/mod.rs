@@ -5,6 +5,7 @@ mod opcode_generators;
 pub mod variables;
 
 use crate::state::cpu::InterruptState;
+use crate::state::cpu::{Memory, Registers, Stack};
 use crate::state::CPU;
 use instructions::{
     adc::ADC, and::AND, asl::ASL, bcf::BC, bit::BIT, bsf::BS, clf::CL, cpr::CP, dec::DEC, der::DE,
@@ -42,6 +43,8 @@ use variables::{
 /// If you look at the instruction set, you'll notice that there exist many instructions that do
 /// the same thing but on different flags and registers. The `variables` module is an attempt to
 /// decouple instructions from the data they act on.
+
+const RESET_VECTOR: u16 = 0xFFFC;
 
 /// Executes a CPU cycle
 pub fn cycle<'a, S: CPU>(
@@ -310,7 +313,16 @@ fn get_instruction<'a, S: CPU>(
     }
 }
 
+/// Jumps to the place pointed at by the reset vector
+pub fn reset<'a, S: Memory + Stack + Registers>(cpu: &'a RefCell<S>) {
+    let interrupt_low: u8 = cpu.borrow().get_mem(RESET_VECTOR);
+    cpu.borrow_mut().set_pcl(interrupt_low);
+    let interrupt_high: u8 = cpu.borrow().get_mem(RESET_VECTOR + 1);
+    cpu.borrow_mut().set_pch(interrupt_high);
+}
+
 /// Represents the state of an instruction
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum InstructionState {
     OAMDMA,
     NMI,

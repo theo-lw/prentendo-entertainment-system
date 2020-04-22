@@ -1,5 +1,6 @@
 use super::background_evaluation::BackgroundTile;
 use super::sprite_evaluation::Sprite;
+use crate::bitops::BitOps;
 
 pub struct Pipeline {
     sprites: Option<Vec<Sprite>>,
@@ -56,11 +57,16 @@ impl Pipeline {
             None
         });
 
+        // sprite priority and sprite-zero code
         match (
             background_pixel,
             first_active_sprite.map(|x| x.is_transparent()),
             first_active_sprite.map(|x| x.is_front_priority()),
         ) {
+            (Some(_), None, None) => background_palette_addr.map(|x| (x, false)),
+            (None, Some(_), Some(_)) => {
+                first_active_sprite.map(|x| (x.get_current_pixel_palette_addr(), false))
+            }
             (Some(_), Some(true), Some(_)) => background_palette_addr.map(|x| (x, false)),
             (Some(a), Some(b), Some(false)) => background_palette_addr.map(|x| (x, a != 0 && !b)),
             (Some(0), Some(_), Some(_)) => {
@@ -89,11 +95,11 @@ impl Pipeline {
         self.background_attribute_next = Some(tile.attribute);
         self.background_shift_high = match self.background_shift_high {
             None => Some(u16::from(tile.pattern_high)),
-            Some(x) => Some(x & u16::from(tile.pattern_high)),
+            Some(x) => Some(x.replace_bits(0b1111_1111, u16::from(tile.pattern_high))),
         };
         self.background_shift_low = match self.background_shift_low {
             None => Some(u16::from(tile.pattern_low)),
-            Some(x) => Some(x & u16::from(tile.pattern_low)),
+            Some(x) => Some(x.replace_bits(0b1111_1111, u16::from(tile.pattern_low))),
         };
         self.background_shift_count = 0;
     }

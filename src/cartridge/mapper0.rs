@@ -6,6 +6,9 @@ pub struct Mapper0 {
 }
 
 impl Mapper0 {
+    pub const DEFAULT_CHR_SIZE: usize = 0x2000;
+    pub const DEFAULT_PRG_SIZE: usize = 0x4000;
+
     pub fn new(rom: INES) -> Self {
         Mapper0 { rom }
     }
@@ -13,7 +16,10 @@ impl Mapper0 {
     #[cfg(test)]
     pub fn mock() -> Self {
         Mapper0 {
-            rom: INES::mock(vec![0; 0x4000], vec![0; 0x2000]),
+            rom: INES::mock(
+                vec![0; Self::DEFAULT_PRG_SIZE],
+                vec![0; Self::DEFAULT_CHR_SIZE],
+            ),
         }
     }
 }

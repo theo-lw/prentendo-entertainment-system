@@ -59,7 +59,11 @@ impl INES {
         })
     }
 
-    pub fn to_mapper(self) -> Box<dyn Mapper> {
+    pub fn to_mapper(mut self) -> Box<dyn Mapper> {
+        let mapper = (self.flags7 & 0b1111_0000) | (self.flags6 >> 4);
+        if mapper == 0 && self.chr.len() == 0 {
+            self.chr = vec![0; Mapper0::DEFAULT_CHR_SIZE];
+        }
         Box::new(Mapper0::new(self))
     }
 

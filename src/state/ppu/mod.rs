@@ -17,6 +17,13 @@ use oam::OAM;
 use ram::RAM;
 use std::cell::Cell;
 
+pub trait DebugRegisters {
+    fn get_2002(&self) -> u8;
+    fn get_2007(&self) -> u8;
+    fn get_v(&self) -> u16;
+    fn get_t(&self) -> u16;
+}
+
 pub trait MappedRegisters {
     fn get_ppu_ctrl(&self) -> u8;
     fn set_ppu_ctrl(&mut self, val: u8);

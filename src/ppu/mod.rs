@@ -29,11 +29,12 @@ pub fn cycle<'a, T: PPU>(
 
             // the zero tick is always idle - nothing happens other than a cycle update
             if tick == 0 {
-                yield None;
                 ppu.borrow_mut().update_cycle();
+                yield None;
                 continue;
             }
 
+            let mut pixel: Option<Pixel> = None;
             if should_output_pixel(scanline, tick) && (background_enabled || sprites_enabled) {
                 let fine_x = ppu.borrow().get_fine_x();
                 let fine_y = ppu.borrow().get_fine_y();
@@ -42,17 +43,13 @@ pub fn cycle<'a, T: PPU>(
                     if sprite0 && background_enabled && sprites_enabled && tick != 256 {
                         ppu.borrow_mut().trigger_sprite_zero();
                     }
-                    yield Some(Pixel {
+                    pixel = Some(Pixel {
                         x: tick - 1,
                         y: scanline,
                         color,
                     });
-                } else {
-                    yield None;
                 }
                 pipeline.advance_pipeline();
-            } else {
-                yield None;
             }
 
             if should_run_background(scanline, tick) && background_enabled {
@@ -75,19 +72,19 @@ pub fn cycle<'a, T: PPU>(
                 }
             }
 
-            if should_increment_x(scanline, tick) {
+            if should_increment_x(scanline, tick) && (background_enabled || sprites_enabled) {
                 ppu.borrow_mut().increment_x();
             }
 
-            if should_increment_y(scanline, tick) {
+            if should_increment_y(scanline, tick) && (background_enabled || sprites_enabled) {
                 ppu.borrow_mut().increment_y();
             }
 
-            if should_reset_x(scanline, tick) {
+            if should_reset_x(scanline, tick) && (background_enabled || sprites_enabled) {
                 ppu.borrow_mut().reset_x();
             }
 
-            if should_reset_y(scanline, tick) {
+            if should_reset_y(scanline, tick) && (background_enabled || sprites_enabled) {
                 ppu.borrow_mut().reset_y();
             }
 
@@ -102,6 +99,7 @@ pub fn cycle<'a, T: PPU>(
             }
 
             ppu.borrow_mut().update_cycle();
+            yield pixel;
         }
     }
 }

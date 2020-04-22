@@ -59,7 +59,7 @@ impl Memory for NES {
             }
             // anything outside the given range is unreachable because the internal vram address
             // only goes up to 12 bits
-            _ => unreachable!(),
+            _ => 0,
         }
     }
 
@@ -74,13 +74,13 @@ impl Memory for NES {
                     }
                     0x2400..=0x27FF => match self.cartridge.get_nametable_mirroring() {
                         NametableMirroring::Horizontal => {
-                            self.ppu.ram.nametable_a[usize::from(reduced_addr - 0x400)] = val
+                            self.ppu.ram.nametable_a[usize::from(reduced_addr - 0x2400)] = val
                         }
                         NametableMirroring::Vertical => {
-                            self.ppu.ram.nametable_b[usize::from(reduced_addr - 0x400)] = val
+                            self.ppu.ram.nametable_b[usize::from(reduced_addr - 0x2400)] = val
                         }
                         NametableMirroring::FourScreen => {
-                            self.ppu.ram.nametable_b[usize::from(reduced_addr - 0x400)] = val
+                            self.ppu.ram.nametable_b[usize::from(reduced_addr - 0x2400)] = val
                         }
                     },
                     0x2800..=0x2BFF => match self.cartridge.get_nametable_mirroring() {
@@ -121,7 +121,7 @@ impl Memory for NES {
                 }
                 self.ppu.ram.palatte_ram[reduced_addr] = val;
             }
-            _ => unreachable!(),
+            _ => {},
         }
     }
 }
