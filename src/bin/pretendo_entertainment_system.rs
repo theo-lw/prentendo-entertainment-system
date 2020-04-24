@@ -7,6 +7,7 @@ use pretendo_entertainment_system::ppu;
 use pretendo_entertainment_system::ppu::display::Display;
 use pretendo_entertainment_system::ppu::Pixel;
 use pretendo_entertainment_system::state::cpu::Registers;
+use pretendo_entertainment_system::state::io::Controller;
 use pretendo_entertainment_system::state::ppu::Cycle;
 use pretendo_entertainment_system::state::ppu::DebugRegisters;
 use pretendo_entertainment_system::state::ppu::Frame;
@@ -87,6 +88,8 @@ fn main() -> Result<(), ROMError> {
         // }
 
         if nes.borrow().is_short_frame() {
+            nes.borrow_mut()
+                .update_controller(event_pump.keyboard_state());
             Pin::new(&mut cpu_generator).resume(());
             for _ in 0..2 {
                 run_ppu(&mut ppu_generator, &mut display);
@@ -96,6 +99,8 @@ fn main() -> Result<(), ROMError> {
         }
 
         for _ in 0..BASE_CYCLES_PER_FRAME {
+            nes.borrow_mut()
+                .update_controller(event_pump.keyboard_state());
             if let GeneratorState::Yielded(InstructionState::Complete(instr)) =
                 Pin::new(&mut cpu_generator).resume(())
             {

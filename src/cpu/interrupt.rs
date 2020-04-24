@@ -6,8 +6,8 @@ use std::ops::Generator;
 
 // TODO: implement interrupt hijacking and branch instruction interrupt polling
 
-const NMI_VECTOR: u16 = 0xFFFE;
-const IRQ_VECTOR: u16 = 0xFFFA;
+const NMI_VECTOR: u16 = 0xFFFA;
+const IRQ_VECTOR: u16 = 0xFFFE;
 
 /// Creates an NMI interrupt
 pub fn nmi<'a, S: Memory + Stack + Registers>(

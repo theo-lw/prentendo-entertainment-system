@@ -14,6 +14,9 @@ impl Background for NES {
             | ((self.ppu.internal_registers.v.get() >> 4) & 0x38)
             | ((self.ppu.internal_registers.v.get() >> 2) & 0x07)
     }
+    fn get_attribute_shift(&self) -> u16 {
+        ((self.ppu.internal_registers.v.get() >> 4) & 4) | (self.ppu.internal_registers.v.get() & 2)
+    }
     fn get_background_tile_addr_low(&self, index: u8) -> u16 {
         self.ppu.ctrl.get_background_pattern_table_addr()
             + ((index as u16) << 4)

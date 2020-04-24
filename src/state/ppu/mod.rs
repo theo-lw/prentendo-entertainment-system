@@ -47,6 +47,7 @@ pub trait Background {
     fn should_render_background(&self) -> bool;
     fn get_nametable_addr(&self) -> u16;
     fn get_attribute_addr(&self) -> u16;
+    fn get_attribute_shift(&self) -> u16;
     fn get_background_tile_addr_low(&self, index: u8) -> u16;
     fn get_background_tile_addr_high(&self, index: u8) -> u16;
     fn get_fine_x(&self) -> u8;

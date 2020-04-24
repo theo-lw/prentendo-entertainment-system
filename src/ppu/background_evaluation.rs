@@ -12,7 +12,8 @@ pub fn evaluate_background<'a, T: Background + Memory>(
         yield;
         let attribute_addr: u16 = ppu.borrow().get_attribute_addr();
         yield;
-        let attribute: u8 = ppu.borrow().get(attribute_addr);
+        let attribute: u8 =
+            (ppu.borrow().get(attribute_addr) >> ppu.borrow().get_attribute_shift()) & 0b11;
         yield;
         let tile_addr_low: u16 = ppu.borrow().get_background_tile_addr_low(nametable);
         yield;

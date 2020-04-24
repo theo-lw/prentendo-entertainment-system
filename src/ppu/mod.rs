@@ -56,6 +56,7 @@ pub fn cycle<'a, T: PPU>(
                 match Pin::new(&mut background_generator).resume(()) {
                     GeneratorState::Complete(tile) => {
                         pipeline.load_background_tile(tile);
+                        ppu.borrow_mut().increment_x();
                         background_generator = evaluate_background(ppu);
                     }
                     _ => {}
@@ -70,10 +71,6 @@ pub fn cycle<'a, T: PPU>(
                     }
                     _ => {}
                 }
-            }
-
-            if should_increment_x(scanline, tick) && (background_enabled || sprites_enabled) {
-                ppu.borrow_mut().increment_x();
             }
 
             if should_increment_y(scanline, tick) && (background_enabled || sprites_enabled) {
@@ -104,13 +101,17 @@ pub fn cycle<'a, T: PPU>(
     }
 }
 
+fn on_render_line(scanline: usize) -> bool {
+    (0..=239).contains(&scanline) || scanline == 261
+}
+
 fn should_output_pixel(scanline: usize, tick: usize) -> bool {
     (1..=256).contains(&tick) && (0..=239).contains(&scanline)
 }
 
 fn should_run_background(scanline: usize, tick: usize) -> bool {
     ((1..=256).contains(&tick) || (321..=336).contains(&tick))
-        && ((0..=239).contains(&scanline) || scanline == 261)
+        && on_render_line(scanline)
         && tick != 0
 }
 
@@ -123,11 +124,11 @@ fn should_increment_x(scanline: usize, tick: usize) -> bool {
 }
 
 fn should_increment_y(scanline: usize, tick: usize) -> bool {
-    tick == 256 && should_run_background(scanline, tick)
+    tick == 256 && on_render_line(scanline)
 }
 
 fn should_reset_x(scanline: usize, tick: usize) -> bool {
-    tick == 257 && should_run_background(scanline, tick)
+    tick == 257 && on_render_line(scanline)
 }
 
 fn should_reset_y(scanline: usize, tick: usize) -> bool {

@@ -132,16 +132,18 @@ impl MappedRegisters for NES {
     fn get_ppu_data(&self) -> u8 {
         let vram_addr: u16 = self.ppu.internal_registers.v.get();
         // make the read
-        let result: u8 = if vram_addr < 0x3EFF {
+        let result: u8 = if vram_addr < 0x3F00 {
             let val = self.ppu.data_buffer.get();
             self.ppu.data_buffer.set(self.get(vram_addr));
             val
         } else {
-            self.ppu.data_buffer.set(self.get(vram_addr - 0x100));
+            self.ppu.data_buffer.set(self.get(vram_addr - 0x1000));
             self.get(vram_addr)
         };
         // increment address
-        if self.ppu.current_cycle.is_on_render_line() && (self.should_render_sprites() || self.should_render_background()) {
+        if self.ppu.current_cycle.is_on_render_line()
+            && (self.should_render_sprites() || self.should_render_background())
+        {
             self.ppu.internal_registers.increment_y();
             self.ppu.internal_registers.increment_x();
         } else {
@@ -158,7 +160,9 @@ impl MappedRegisters for NES {
     }
     fn set_ppu_data(&mut self, val: u8) {
         self.set(self.ppu.internal_registers.v.get(), val);
-        if self.ppu.current_cycle.is_on_render_line() && (self.should_render_sprites() || self.should_render_background()) {
+        if self.ppu.current_cycle.is_on_render_line()
+            && (self.should_render_sprites() || self.should_render_background())
+        {
             self.ppu.internal_registers.increment_y();
             self.ppu.internal_registers.increment_x();
         } else {

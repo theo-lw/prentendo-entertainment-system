@@ -46,7 +46,7 @@ pub fn evaluate_sprites<'a, T: Cycle + Sprites + Memory>(
                 yield;
                 secondary_oam[secondary_oam_index + 3] = x_coordinate;
                 yield;
-                secondary_oam_index += 4;
+                secondary_oam_index += usize::from(OAM::BYTES_PER_SPRITE);
                 sprite_count += 1;
                 cycle_count += 6;
             }
@@ -87,15 +87,15 @@ pub fn evaluate_sprites<'a, T: Cycle + Sprites + Memory>(
         // fetch sprite data
         let mut result: Vec<Sprite> = Vec::new();
         for i in 0..sprite_count {
-            let y_coordinate: u8 = secondary_oam[i];
+            let y_coordinate: u8 = secondary_oam[i * usize::from(OAM::BYTES_PER_SPRITE)];
             yield;
-            let tile_index: u8 = secondary_oam[i + 1];
+            let tile_index: u8 = secondary_oam[i * usize::from(OAM::BYTES_PER_SPRITE) + 1];
             yield;
-            let attributes: u8 = secondary_oam[i + 2];
+            let attributes: u8 = secondary_oam[i * usize::from(OAM::BYTES_PER_SPRITE) + 2];
             let vertical_flip: bool = attributes.is_bit_set(7);
             let horizontal_flip: bool = attributes.is_bit_set(6);
             yield;
-            let x_coordinate: u8 = secondary_oam[i + 3];
+            let x_coordinate: u8 = secondary_oam[i * usize::from(OAM::BYTES_PER_SPRITE) + 3];
             yield;
             let mut y_offset: u8 = ppu.borrow().get_scanline() as u8 - y_coordinate;
             if vertical_flip {
@@ -126,7 +126,7 @@ pub fn evaluate_sprites<'a, T: Cycle + Sprites + Memory>(
         }
 
         // stall until cycle 340
-        while cycle_count < 340 {
+        while cycle_count < 339 {
             yield;
             cycle_count += 1;
         }
