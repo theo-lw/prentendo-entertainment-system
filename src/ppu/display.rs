@@ -20,9 +20,9 @@ impl<'a> Display {
     pub fn set_pixel(&mut self, pixel: Pixel) {
         let base_index: usize = Self::BYTES_PER_PIXEL * (pixel.x + pixel.y * Self::WIDTH);
         self.texture[base_index] = u8::max_value();
-        self.texture[base_index + 1] = pixel.color.r;
+        self.texture[base_index + 1] = pixel.color.b;
         self.texture[base_index + 2] = pixel.color.g;
-        self.texture[base_index + 3] = pixel.color.b;
+        self.texture[base_index + 3] = pixel.color.r;
     }
 
     pub fn get(&'a self) -> &'a [u8; Self::BYTES] {

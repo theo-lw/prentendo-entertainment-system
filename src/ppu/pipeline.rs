@@ -55,7 +55,7 @@ impl Pipeline {
 
         // sprite priority and sprite-zero code
         match (
-            background_palette_addr,
+            background_palette_index,
             first_active_sprite.map(|x| x.is_transparent()),
             first_active_sprite.map(|x| x.is_front_priority()),
         ) {

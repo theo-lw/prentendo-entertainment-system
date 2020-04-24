@@ -22,7 +22,7 @@ use std::fs::File;
 use std::ops::{Generator, GeneratorState};
 use std::path::PathBuf;
 use std::pin::Pin;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 use structopt::StructOpt;
 
 const BASE_CYCLES_PER_FRAME: u16 = 29780;
@@ -73,7 +73,9 @@ fn main() -> Result<(), ROMError> {
         )
         .expect("Could not create texture!");
 
+    let sleep_duration = Duration::new(0, 1_000_000_000u32 / 60);
     'running: loop {
+        let start = Instant::now();
         // 'keypress: loop {
         for event in event_pump.poll_iter() {
             match event {
@@ -140,7 +142,10 @@ fn main() -> Result<(), ROMError> {
             .copy(&texture, None, None)
             .expect("Could not copy texture!");
         canvas.present();
-        ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
+        let end = Instant::now();
+        if end - start < sleep_duration {
+            ::std::thread::sleep(sleep_duration - (end - start));
+        }
     }
 
     Ok(())

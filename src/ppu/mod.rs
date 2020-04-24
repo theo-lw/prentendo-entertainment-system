@@ -63,7 +63,7 @@ pub fn cycle<'a, T: PPU>(
                 }
             }
 
-            if should_run_sprites(scanline, tick) && sprites_enabled {
+            if should_run_sprites(scanline, tick) && (background_enabled || sprites_enabled) {
                 match Pin::new(&mut sprite_generator).resume(()) {
                     GeneratorState::Complete(sprites) => {
                         pipeline.load_sprites(sprites);
