@@ -26,7 +26,7 @@ impl Pipeline {
     /// Returns an optional tuple containing:
     /// 1. The address of the next pixel's palette color
     /// 2. Whether a sprite0 hit has occurred
-    pub fn get_next_palette_addr(&self, fine_x: u8, fine_y: u8) -> Option<(u16, bool)> {
+    pub fn get_next_palette_addr(&self, fine_x: u8) -> Option<(u16, bool)> {
         let background_attr: Option<u8> = if fine_x + self.background_shift_count >= 8 {
             self.background_attribute_next
         } else {
@@ -64,10 +64,10 @@ impl Pipeline {
                 first_active_sprite.map(|x| (x.get_current_pixel_palette_addr(), false))
             }
             (Some(_), Some(true), Some(_)) => background_palette_addr.map(|x| (x, false)),
-            (Some(a), Some(b), Some(false)) => background_palette_addr.map(|x| (x, a != 0 && !b)),
             (Some(0), Some(_), Some(_)) => {
                 first_active_sprite.map(|x| (x.get_current_pixel_palette_addr(), false))
             }
+            (Some(a), Some(b), Some(false)) => background_palette_addr.map(|x| (x, a != 0 && !b)),
             (Some(a), Some(b), Some(true)) => {
                 first_active_sprite.map(|x| (x.get_current_pixel_palette_addr(), a != 0 && !b))
             }
@@ -75,15 +75,18 @@ impl Pipeline {
         }
     }
 
-    pub fn advance_pipeline(&mut self) {
+    pub fn advance_background(&mut self) {
         self.background_shift_high = self.background_shift_high.map(|x| x << 1);
         self.background_shift_low = self.background_shift_low.map(|x| x << 1);
+        self.background_shift_count = (self.background_shift_count + 1) % 8;
+    }
+
+    pub fn advance_sprites(&mut self) {
         if let Some(vec) = &mut self.sprites {
             for sprite in vec {
                 sprite.shift();
             }
         }
-        self.background_shift_count = (self.background_shift_count + 1) % 8;
     }
 
     pub fn load_background_tile(&mut self, tile: BackgroundTile) {

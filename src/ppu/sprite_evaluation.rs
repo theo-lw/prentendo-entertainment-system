@@ -74,7 +74,7 @@ pub fn evaluate_sprites<'a, T: Cycle + Sprites + Memory>(
                 cycle_count += 3;
             } else {
                 attribute_index = (attribute_index + 1) % 4;
-                sprite_index = (sprite_index + 1) % 4;
+                sprite_index += 1;
             }
         }
 
@@ -99,7 +99,7 @@ pub fn evaluate_sprites<'a, T: Cycle + Sprites + Memory>(
             yield;
             let mut y_offset: u8 = ppu.borrow().get_scanline() as u8 - y_coordinate;
             if vertical_flip {
-                y_offset = u8::from(ppu.borrow().get_sprite_height()) - y_offset;
+                y_offset = u8::from(ppu.borrow().get_sprite_height()) - 1 - y_offset;
             }
             let low_tile_addr: u16 = ppu.borrow().get_sprite_tile_addr_low(tile_index, y_offset);
             yield;

@@ -11,7 +11,7 @@ impl CycleStatus {
 
     pub fn new() -> Self {
         CycleStatus {
-            tick: 23,
+            tick: 0,
             scanline: Self::MAX_SCANLINES,
             is_odd_frame: false,
         }

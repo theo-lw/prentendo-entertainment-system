@@ -37,8 +37,7 @@ pub fn cycle<'a, T: PPU>(
             let mut pixel: Option<Pixel> = None;
             if should_output_pixel(scanline, tick) && (background_enabled || sprites_enabled) {
                 let fine_x = ppu.borrow().get_fine_x();
-                let fine_y = ppu.borrow().get_fine_y();
-                if let Some((addr, sprite0)) = pipeline.get_next_palette_addr(fine_x, fine_y) {
+                if let Some((addr, sprite0)) = pipeline.get_next_palette_addr(fine_x) {
                     let color: Color = NES_COLORS[usize::from(ppu.borrow().get(addr))];
                     if sprite0 && background_enabled && sprites_enabled && tick != 256 {
                         ppu.borrow_mut().trigger_sprite_zero();
@@ -49,10 +48,11 @@ pub fn cycle<'a, T: PPU>(
                         color,
                     });
                 }
-                pipeline.advance_pipeline();
             }
+            yield pixel;
 
             if should_run_background(scanline, tick) && background_enabled {
+                pipeline.advance_background();
                 match Pin::new(&mut background_generator).resume(()) {
                     GeneratorState::Complete(tile) => {
                         pipeline.load_background_tile(tile);
@@ -64,6 +64,7 @@ pub fn cycle<'a, T: PPU>(
             }
 
             if should_run_sprites(scanline, tick) && (background_enabled || sprites_enabled) {
+                pipeline.advance_sprites();
                 match Pin::new(&mut sprite_generator).resume(()) {
                     GeneratorState::Complete(sprites) => {
                         pipeline.load_sprites(sprites);
@@ -96,7 +97,6 @@ pub fn cycle<'a, T: PPU>(
             }
 
             ppu.borrow_mut().update_cycle();
-            yield pixel;
         }
     }
 }
@@ -117,10 +117,6 @@ fn should_run_background(scanline: usize, tick: usize) -> bool {
 
 fn should_run_sprites(scanline: usize, tick: usize) -> bool {
     (0..=239).contains(&scanline) && tick != 0
-}
-
-fn should_increment_x(scanline: usize, tick: usize) -> bool {
-    (tick % 8) == 0 && should_run_background(scanline, tick)
 }
 
 fn should_increment_y(scanline: usize, tick: usize) -> bool {

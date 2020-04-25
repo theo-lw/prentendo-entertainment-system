@@ -35,7 +35,7 @@ impl MappedRegisters for NES {
             .ppu
             .internal_registers
             .t
-            .replace_bits(0b11_00000_00000, u16::from(val & 0b11) << 10);
+            .replace_bits(0b11_00000_00000, u16::from(val) << 10);
         let old_nmi_output = self.ppu.ctrl.should_output_nmi();
         self.ppu.ctrl.set(val);
         self.ppu.open_bus.set(val);
@@ -152,7 +152,8 @@ impl MappedRegisters for NES {
                     .internal_registers
                     .v
                     .get()
-                    .wrapping_add(self.ppu.ctrl.get_vram_increment()),
+                    .wrapping_add(self.ppu.ctrl.get_vram_increment())
+                    % 0x4000,
             );
         }
         self.ppu.open_bus.set(result);
@@ -171,7 +172,7 @@ impl MappedRegisters for NES {
                     .internal_registers
                     .v
                     .get()
-                    .wrapping_add(self.ppu.ctrl.get_vram_increment()),
+                    .wrapping_add(self.ppu.ctrl.get_vram_increment() % 0x4000),
             );
         }
         self.ppu.open_bus.set(val);
