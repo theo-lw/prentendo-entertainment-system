@@ -1,3 +1,4 @@
+use super::palette::PALETTE_SPRITE_BASE;
 use crate::bitops::BitOps;
 use crate::state::ppu::oam::OAM;
 use crate::state::ppu::{Cycle, Memory, Sprites};
@@ -157,14 +158,9 @@ impl Sprite {
     }
 
     pub fn get_current_pixel_palette_addr(&self) -> u16 {
-        let base_palettte: u16 = match self.attributes & 0b11 {
-            0 => 0x3F10,
-            1 => 0x3F14,
-            2 => 0x3F18,
-            3 => 0x3F1C,
-            _ => unreachable!(),
-        };
-        base_palettte + u16::from(self.get_palette_index())
+        PALETTE_SPRITE_BASE
+            + (u16::from(self.attributes & 0b11) * 4)
+            + u16::from(self.get_palette_index())
     }
 
     pub fn is_active(&self) -> bool {

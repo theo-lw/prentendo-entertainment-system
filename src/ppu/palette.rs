@@ -1,5 +1,8 @@
 use super::Color;
 
+pub const PALETTE_BACKGROUND_BASE: u16 = 0x3F00;
+pub const PALETTE_SPRITE_BASE: u16 = 0x3F10;
+
 /// The NES color lookup table. This is hardcoded for now.
 pub const NES_COLORS: [Color; 0x40] = [
     Color {

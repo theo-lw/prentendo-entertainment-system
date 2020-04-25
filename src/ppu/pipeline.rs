@@ -1,4 +1,5 @@
 use super::background_evaluation::BackgroundTile;
+use super::palette::PALETTE_BACKGROUND_BASE;
 use super::sprite_evaluation::Sprite;
 use crate::bitops::BitOps;
 
@@ -33,12 +34,13 @@ impl Pipeline {
             self.background_attribute_current
         };
 
-        let background_palette: Option<u16> = background_attr.map(|x| 0x3F00 + u16::from(x) * 4);
+        let background_palette: Option<u16> =
+            background_attr.map(|x| PALETTE_BACKGROUND_BASE + u16::from(x) * 4);
 
         let background_palette_index: Option<u16> = map2(
             self.background_shift_high,
             self.background_shift_low,
-            |a, b| (((a >> (15 - fine_x)) << 1) | (b >> (15 - fine_x))) & 0b11,
+            |a, b| (((a >> (15 - fine_x)) << 1) & 0b10) | ((b >> (15 - fine_x)) & 0b1),
         );
 
         let background_palette_addr: Option<u16> =
@@ -71,7 +73,7 @@ impl Pipeline {
             (Some(a), Some(b), Some(true)) => {
                 first_active_sprite.map(|x| (x.get_current_pixel_palette_addr(), a != 0 && !b))
             }
-            _ => None,
+            _ => Some((PALETTE_BACKGROUND_BASE, false)),
         }
     }
 
