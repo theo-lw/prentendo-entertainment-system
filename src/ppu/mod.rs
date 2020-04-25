@@ -42,7 +42,6 @@ pub fn cycle<'a, T: PPU + DebugRegisters>(
                     let color: Color = NES_COLORS[usize::from(ppu.borrow().get(addr))];
                     if sprite0 && background_enabled && sprites_enabled && tick != 256 {
                         ppu.borrow_mut().trigger_sprite_zero();
-                        // println!("Sprite zero scanline: {}, tick: {}", scanline, tick);
                     }
                     pixel = Some(Pixel {
                         x: tick - 1,

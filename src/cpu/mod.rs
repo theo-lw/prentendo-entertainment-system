@@ -78,19 +78,20 @@ pub fn cycle<'a, S: CPU>(
             }
         }
         if pending_interrupt == InterruptState::NMI {
+            cpu.borrow_mut().clear_interrupt();
             let mut nmi_generator = interrupt::nmi(cpu);
             while let GeneratorState::Yielded(_) = Pin::new(&mut nmi_generator).resume(()) {
                 yield InstructionState::NMI;
                 cpu.borrow_mut().toggle_odd_even();
             }
         } else if pending_interrupt == InterruptState::IRQ {
+            cpu.borrow_mut().clear_interrupt();
             let mut irq_generator = interrupt::irq(cpu);
             while let GeneratorState::Yielded(_) = Pin::new(&mut irq_generator).resume(()) {
                 yield InstructionState::IRQ;
                 cpu.borrow_mut().toggle_odd_even();
             }
         }
-        cpu.borrow_mut().clear_interrupt();
     }
 }
 
