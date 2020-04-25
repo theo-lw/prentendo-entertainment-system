@@ -4,6 +4,7 @@ mod palette;
 mod pipeline;
 mod sprite_evaluation;
 
+use crate::state::ppu::DebugRegisters;
 use crate::state::PPU;
 use background_evaluation::evaluate_background;
 use palette::NES_COLORS;
@@ -14,7 +15,7 @@ use std::ops::{Generator, GeneratorState};
 use std::pin::Pin;
 
 /// This function decides what happens on each cycle, yielding pixels along the way
-pub fn cycle<'a, T: PPU>(
+pub fn cycle<'a, T: PPU + DebugRegisters>(
     ppu: &'a RefCell<T>,
 ) -> impl Generator<Yield = Option<Pixel>, Return = ()> + 'a {
     move || {
@@ -26,6 +27,16 @@ pub fn cycle<'a, T: PPU>(
             let tick: usize = ppu.borrow().get_tick();
             let background_enabled: bool = ppu.borrow().should_render_background();
             let sprites_enabled: bool = ppu.borrow().should_render_sprites();
+
+            /*
+            if tick == 0 && scanline == 0 {
+                println!(
+                    "v: {:b}, x: {:b}",
+                    ppu.borrow().get_v(),
+                    ppu.borrow().get_x()
+                );
+            }
+            */
 
             // the zero tick is always idle - nothing happens other than a cycle update
             if tick == 0 {
@@ -41,6 +52,7 @@ pub fn cycle<'a, T: PPU>(
                     let color: Color = NES_COLORS[usize::from(ppu.borrow().get(addr))];
                     if sprite0 && background_enabled && sprites_enabled && tick != 256 {
                         ppu.borrow_mut().trigger_sprite_zero();
+                        // println!("Sprite zero scanline: {}, tick: {}", scanline, tick);
                     }
                     pixel = Some(Pixel {
                         x: tick - 1,

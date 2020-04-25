@@ -11,7 +11,7 @@ impl Interrupt for NES {
         self.cpu.pending_interrupt = InterruptState::NMI;
     }
     fn trigger_irq(&mut self) {
-        if self.cpu.pending_interrupt == InterruptState::NMI && self.is_flag_set(Flag::I) {
+        if self.cpu.pending_interrupt == InterruptState::NMI && !self.is_flag_set(Flag::I) {
             return;
         }
         self.cpu.pending_interrupt = InterruptState::IRQ;

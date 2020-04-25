@@ -90,7 +90,7 @@ impl MappedRegisters for NES {
         if self.ppu.internal_registers.w.get() {
             self.ppu.internal_registers.t = self.ppu.internal_registers.t.replace_bits(
                 0b111_00_11111_00000,
-                (u16::from(val & 0b111) << 12) + (u16::from(val & 0b11111_000) << 5),
+                (u16::from(val & 0b111) << 12) | (u16::from(val & 0b11111_000) << 2),
             );
             self.ppu.internal_registers.w.set(false);
         } else {

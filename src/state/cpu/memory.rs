@@ -45,8 +45,8 @@ impl Memory for NES {
             0x4013 => self.apu.dmc_len,
             0x4014 => self.cpu.open_bus.get(),
             0x4015 => self.apu.snd_chn,
-            0x4016 | 0x4017 => self.io.read() | self.cpu.open_bus.get(),
-            0x4018..=0x401F => self.cpu.open_bus.get(),
+            0x4016 => self.io.read() | self.cpu.open_bus.get(),
+            0x4017..=0x401F => self.cpu.open_bus.get(),
             0x4020..=0xFFFF => self.cartridge.as_cpu_mapper().get(addr),
         });
         self.cpu.open_bus.get()

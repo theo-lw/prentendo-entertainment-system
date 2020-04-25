@@ -18,7 +18,6 @@ impl VBlank for NES {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::state::cpu::InterruptState;
 
     #[test]
     fn test_start_vblank() {

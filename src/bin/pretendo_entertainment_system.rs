@@ -144,7 +144,7 @@ fn main() -> Result<(), ROMError> {
         canvas.present();
         let end = Instant::now();
         if end - start < sleep_duration {
-            ::std::thread::sleep(sleep_duration - (end - start));
+            //::std::thread::sleep(sleep_duration - (end - start));
         }
     }
 
