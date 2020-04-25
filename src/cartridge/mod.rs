@@ -1,5 +1,6 @@
 pub mod ines;
 pub mod mapper0;
+mod mapper2;
 
 /// The mapper visible to the CPU
 /// `get` and `set` should take addresses in the range of 0x4020 - 0xFFFF

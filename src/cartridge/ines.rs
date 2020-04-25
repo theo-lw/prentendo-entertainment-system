@@ -1,4 +1,5 @@
 use super::mapper0::Mapper0;
+use super::mapper2::Mapper2;
 use super::{Mapper, NametableMirroring};
 use crate::bitops::BitOps;
 use std::io;
@@ -12,9 +13,9 @@ pub struct INES {
     pub chr: Vec<u8>,
     flags6: u8,
     flags7: u8,
-    flags8: u8,
-    flags9: u8,
-    flags10: u8,
+    _flags8: u8,
+    _flags9: u8,
+    _flags10: u8,
 }
 
 impl INES {
@@ -25,9 +26,9 @@ impl INES {
             chr,
             flags6: 0,
             flags7: 0,
-            flags8: 0,
-            flags9: 0,
-            flags10: 0,
+            _flags8: 0,
+            _flags9: 0,
+            _flags10: 0,
         }
     }
 
@@ -40,31 +41,36 @@ impl INES {
         let chr_pages = header[5];
         let flags6 = header[6];
         let flags7 = header[7];
-        let flags8 = header[8];
-        let flags9 = header[9];
-        let flags10 = header[10];
+        let _flags8 = header[8];
+        let _flags9 = header[9];
+        let _flags10 = header[10];
         if flags6.is_bit_set(2) {
             take(file, TRAINER_SIZE)?;
         }
         let prg = take(file, prg_pages as usize * PRG_PAGE_SIZE)?;
-        let chr = take(file, chr_pages as usize * CHR_PAGE_SIZE)?;
+        let chr = if chr_pages == 0 {
+            vec![0; CHR_PAGE_SIZE]
+        } else {
+            take(file, chr_pages as usize * CHR_PAGE_SIZE)?
+        };
         Ok(INES {
             prg,
             chr,
             flags6,
             flags7,
-            flags8,
-            flags9,
-            flags10,
+            _flags8,
+            _flags9,
+            _flags10,
         })
     }
 
     pub fn to_mapper(mut self) -> Box<dyn Mapper> {
         let mapper = (self.flags7 & 0b1111_0000) | (self.flags6 >> 4);
-        if self.chr.is_empty() {
-            self.chr = vec![0; Mapper0::DEFAULT_CHR_SIZE];
+        match mapper {
+            0 => Box::new(Mapper0::new(self)),
+            2 => Box::new(Mapper2::new(self)),
+            _ => unimplemented!(),
         }
-        Box::new(Mapper0::new(self))
     }
 
     pub fn get_nametable_mirroring(&self) -> NametableMirroring {

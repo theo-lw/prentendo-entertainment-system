@@ -61,7 +61,7 @@ impl PPUMapper for Mapper0 {
     fn set(&mut self, addr: u16, val: u8) {
         match addr {
             0x0..=0x1FFF => self.rom.chr[addr as usize] = val,
-            _ => unimplemented!(),
+            _ => unreachable!(),
         }
     }
 
