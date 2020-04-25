@@ -58,6 +58,7 @@ pub fn evaluate_sprites<'a, T: Cycle + Sprites + Memory>(
         while (0..OAM::SPRITE_COUNT).contains(&sprite_index) {
             let y_coordinate: u8 = ppu.borrow().read_oam(sprite_index, attribute_index);
             yield;
+            cycle_count += 1;
             let sprite_range = usize::from(y_coordinate)
                 ..(usize::from(y_coordinate) + usize::from(ppu.borrow().get_sprite_height()));
             if sprite_range.contains(&ppu.borrow().get_scanline()) {
@@ -69,9 +70,7 @@ pub fn evaluate_sprites<'a, T: Cycle + Sprites + Memory>(
                         sprite_index += 1;
                     }
                     attribute_index = (attribute_index + 1) % 4;
-                    yield;
                 }
-                cycle_count += 3;
             } else {
                 attribute_index = (attribute_index + 1) % 4;
                 sprite_index += 1;
@@ -130,6 +129,7 @@ pub fn evaluate_sprites<'a, T: Cycle + Sprites + Memory>(
             yield;
             cycle_count += 1;
         }
+
         result
     }
 }
