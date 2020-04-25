@@ -57,12 +57,7 @@ impl IOState {
         if self.index.get() >= 8 {
             return 1;
         }
-        let result: u8 = if self.buttons[self.index.get()] {
-            // println!("IO not trivial");
-            1
-        } else {
-            0
-        };
+        let result: u8 = if self.buttons[self.index.get()] { 1 } else { 0 };
         self.index.set(self.index.get() + 1);
         if self.strobe_on {
             self.index.set(0);

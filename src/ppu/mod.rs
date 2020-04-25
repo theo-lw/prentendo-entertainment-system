@@ -28,16 +28,6 @@ pub fn cycle<'a, T: PPU + DebugRegisters>(
             let background_enabled: bool = ppu.borrow().should_render_background();
             let sprites_enabled: bool = ppu.borrow().should_render_sprites();
 
-            /*
-            if tick == 0 && scanline == 0 {
-                println!(
-                    "v: {:b}, x: {:b}",
-                    ppu.borrow().get_v(),
-                    ppu.borrow().get_x()
-                );
-            }
-            */
-
             // the zero tick is always idle - nothing happens other than a cycle update
             if tick == 0 {
                 ppu.borrow_mut().update_cycle();
@@ -47,7 +37,7 @@ pub fn cycle<'a, T: PPU + DebugRegisters>(
 
             let mut pixel: Option<Pixel> = None;
             if should_output_pixel(scanline, tick) && (background_enabled || sprites_enabled) {
-                let fine_x = ppu.borrow().get_fine_x();
+                let fine_x: u8 = ppu.borrow().get_fine_x();
                 if let Some((addr, sprite0)) = pipeline.get_next_palette_addr(fine_x) {
                     let color: Color = NES_COLORS[usize::from(ppu.borrow().get(addr))];
                     if sprite0 && background_enabled && sprites_enabled && tick != 256 {

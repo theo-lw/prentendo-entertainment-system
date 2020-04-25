@@ -2,14 +2,10 @@
 use pretendo_entertainment_system::cartridge::ines::{ROMError, INES};
 use pretendo_entertainment_system::cartridge::Mapper;
 use pretendo_entertainment_system::cpu;
-use pretendo_entertainment_system::cpu::InstructionState;
 use pretendo_entertainment_system::ppu;
 use pretendo_entertainment_system::ppu::display::Display;
-use pretendo_entertainment_system::ppu::Pixel;
-use pretendo_entertainment_system::state::cpu::Registers;
 use pretendo_entertainment_system::state::io::Controller;
 use pretendo_entertainment_system::state::ppu::Cycle;
-use pretendo_entertainment_system::state::ppu::DebugRegisters;
 use pretendo_entertainment_system::state::ppu::Frame;
 use pretendo_entertainment_system::state::NES;
 use sdl2;
@@ -25,9 +21,10 @@ use std::pin::Pin;
 use std::time::{Duration, Instant};
 use structopt::StructOpt;
 
-const BASE_CYCLES_PER_FRAME: u16 = 29780;
 const PPU_CYCLES_PER_CPU_CYCLE: u8 = 3;
 const PIXEL_SCALE: u32 = 2;
+const POST_RENDER_LINE: usize = 240;
+const START_RENDER_LINE: usize = 0;
 
 #[derive(StructOpt)]
 #[structopt(version = "0.1", author = "Theodore Wang")]
@@ -73,10 +70,12 @@ fn main() -> Result<(), ROMError> {
         )
         .expect("Could not create texture!");
 
+    // Initialize som ehelper variables
     let sleep_duration = Duration::new(0, 1_000_000_000u32 / 60);
+    let mut old_frame = false;
+
     'running: loop {
         let start = Instant::now();
-        // 'keypress: loop {
         for event in event_pump.poll_iter() {
             match event {
                 Event::Quit { .. }
@@ -87,48 +86,22 @@ fn main() -> Result<(), ROMError> {
                 _ => {}
             }
         }
-        // }
 
-        if nes.borrow().is_short_frame() {
+        while old_frame || nes.borrow().get_scanline() < POST_RENDER_LINE {
             nes.borrow_mut()
                 .update_controller(event_pump.keyboard_state());
             Pin::new(&mut cpu_generator).resume(());
-            for _ in 0..2 {
-                run_ppu(&mut ppu_generator, &mut display);
-            }
-        } else {
-            run_ppu(&mut ppu_generator, &mut display);
-        }
-
-        for _ in 0..BASE_CYCLES_PER_FRAME {
-            nes.borrow_mut()
-                .update_controller(event_pump.keyboard_state());
-            if let GeneratorState::Yielded(InstructionState::Complete(instr)) =
-                Pin::new(&mut cpu_generator).resume(())
-            {
-                /*
-                println!(
-                    "{:04X} A:{:02X} X:{:02X} Y:{:02X} P:{:02X} SP:{:02X} 2002:{:02X} 2007:{:02X} v:{:04X} t:{:04X} tick:{} scanline:{} {:?}",
-                    nes.borrow().get_pc(),
-                    nes.borrow().get_a(),
-                    nes.borrow().get_x(),
-                    nes.borrow().get_y(),
-                    nes.borrow().get_p(),
-                    nes.borrow().get_s(),
-                    nes.borrow().get_2002(),
-                    nes.borrow().get_2007(),
-                    nes.borrow().get_v(),
-                    nes.borrow().get_t(),
-                    nes.borrow().get_tick(),
-                    nes.borrow().get_scanline(),
-                    instr
-                );
-                */
-            }
             for _ in 0..PPU_CYCLES_PER_CPU_CYCLE {
-                run_ppu(&mut ppu_generator, &mut display);
+                match Pin::new(&mut ppu_generator).resume(()) {
+                    GeneratorState::Yielded(Some(pixel)) => display.set_pixel(pixel),
+                    _ => {}
+                }
+            }
+            if nes.borrow().get_scanline() == START_RENDER_LINE {
+                old_frame = false;
             }
         }
+        old_frame = true;
 
         texture
             .update(
@@ -144,22 +117,9 @@ fn main() -> Result<(), ROMError> {
         canvas.present();
         let end = Instant::now();
         if end - start < sleep_duration {
-            //::std::thread::sleep(sleep_duration - (end - start));
+            ::std::thread::sleep(sleep_duration - (end - start));
         }
     }
 
     Ok(())
-}
-
-fn run_ppu(
-    ppu: &mut (impl Generator<Yield = Option<Pixel>, Return = ()> + std::marker::Unpin),
-    display: &mut Display,
-) {
-    match Pin::new(ppu).resume(()) {
-        GeneratorState::Yielded(Some(pixel)) => {
-            //println!("{:?}", pixel);
-            display.set_pixel(pixel)
-        }
-        _ => {}
-    }
 }
