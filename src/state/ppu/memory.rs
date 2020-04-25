@@ -48,8 +48,8 @@ impl Memory for NES {
             }
             0x3F00..=0x3FFF => {
                 let mut reduced_addr = usize::from(addr - 0x3F00) % 0x20;
-                if reduced_addr >= 0x10 && (reduced_addr % 4) == 0 {
-                    reduced_addr -= 0x10;
+                if (reduced_addr % 4) == 0 {
+                    reduced_addr = 0x0;
                 }
                 self.ppu.ram.palatte_ram[reduced_addr]
             }
