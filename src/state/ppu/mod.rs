@@ -1,7 +1,6 @@
 mod background;
 mod cycle;
 mod cycle_status;
-mod frame;
 mod internal_registers;
 mod mapped_registers;
 mod memory;
@@ -84,10 +83,6 @@ pub trait Cycle {
 pub trait VBlank {
     fn start_vblank(&mut self);
     fn end_vlbank(&mut self);
-}
-
-pub trait Frame {
-    fn is_short_frame(&self) -> bool;
 }
 
 /// Represents the PPU's state

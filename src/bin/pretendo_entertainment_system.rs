@@ -6,7 +6,6 @@ use pretendo_entertainment_system::ppu;
 use pretendo_entertainment_system::ppu::display::Display;
 use pretendo_entertainment_system::state::io::Controller;
 use pretendo_entertainment_system::state::ppu::Cycle;
-use pretendo_entertainment_system::state::ppu::Frame;
 use pretendo_entertainment_system::state::NES;
 use sdl2;
 use sdl2::event::Event;

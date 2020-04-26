@@ -79,7 +79,7 @@ pub fn evaluate_sprites<'a, T: Cycle + Sprites + Memory>(
         }
 
         // stall until cycle 256
-        while cycle_count < 256 {
+        while cycle_count < 255 {
             yield;
             cycle_count += 1;
         }
@@ -130,7 +130,6 @@ pub fn evaluate_sprites<'a, T: Cycle + Sprites + Memory>(
             yield;
             cycle_count += 1;
         }
-
         result
     }
 }

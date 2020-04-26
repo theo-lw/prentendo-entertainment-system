@@ -4,7 +4,6 @@ mod palette;
 mod pipeline;
 mod sprite_evaluation;
 
-use crate::state::ppu::DebugRegisters;
 use crate::state::PPU;
 use background_evaluation::evaluate_background;
 use palette::NES_COLORS;
@@ -15,7 +14,7 @@ use std::ops::{Generator, GeneratorState};
 use std::pin::Pin;
 
 /// This function decides what happens on each cycle, yielding pixels along the way
-pub fn cycle<'a, T: PPU + DebugRegisters>(
+pub fn cycle<'a, T: PPU>(
     ppu: &'a RefCell<T>,
 ) -> impl Generator<Yield = Option<Pixel>, Return = ()> + 'a {
     move || {

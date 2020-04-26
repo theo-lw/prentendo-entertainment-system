@@ -84,7 +84,7 @@ pub fn write<'a, T: Write<S> + 'a, S: CPU>(
 }
 
 /// Creates the opcode for 'Modify' instructions with indirect Y addressing
-pub fn modify<'a, T: Modify<S> + 'a, S: CPU>(
+pub fn _modify<'a, T: Modify<S> + 'a, S: CPU>(
     cpu: &'a RefCell<S>,
     instruction: T,
 ) -> Pin<Box<dyn Generator<Yield = CPUCycle, Return = CPUCycle> + 'a>> {

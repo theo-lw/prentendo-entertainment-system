@@ -15,11 +15,12 @@ impl Sprites for NES {
                     + u16::from(y_offset)
             }
             SpriteHeight::Sixteen => {
-                let sprite_index = sprite_index.wrapping_add(if y_offset > 0b111 { 1 } else { 0 });
-                let y_offset = y_offset & 0b111;
-                (u16::from(sprite_index & 0b1) << 12)
+                let table = sprite_index & 0b1;
+                let sprite_index =
+                    sprite_index.wrapping_add(if y_offset > 0b111 { 1 } else { 0 });
+                (u16::from(table) << 12)
                     + (u16::from(sprite_index) << 4)
-                    + u16::from(y_offset)
+                    + u16::from(y_offset & 0b111)
             }
         }
     }

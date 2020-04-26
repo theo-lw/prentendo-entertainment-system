@@ -1,12 +1,8 @@
 use super::mapper0::Mapper0;
 use super::mapper2::Mapper2;
-use super::{Mapper, NametableMirroring};
+use super::{Mapper, NametableMirroring, CHR_PAGE_SIZE, PRG_PAGE_SIZE, TRAINER_SIZE};
 use crate::bitops::BitOps;
 use std::io;
-
-const PRG_PAGE_SIZE: usize = 0x4000;
-const CHR_PAGE_SIZE: usize = 0x2000;
-const TRAINER_SIZE: usize = 0x200;
 
 pub struct INES {
     pub prg: Vec<u8>,
@@ -64,7 +60,7 @@ impl INES {
         })
     }
 
-    pub fn to_mapper(mut self) -> Box<dyn Mapper> {
+    pub fn to_mapper(self) -> Box<dyn Mapper> {
         let mapper = (self.flags7 & 0b1111_0000) | (self.flags6 >> 4);
         match mapper {
             0 => Box::new(Mapper0::new(self)),

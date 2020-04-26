@@ -1,5 +1,5 @@
 use super::cycle_status::CycleStatus;
-use super::{Background, Cycle, Frame, Sprites};
+use super::{Background, Cycle, Sprites};
 use crate::state::NES;
 
 impl Cycle for NES {
@@ -10,7 +10,10 @@ impl Cycle for NES {
             self.ppu.current_cycle.scanline = 0;
             self.ppu.current_cycle.tick = 0;
             self.ppu.current_cycle.is_odd_frame = !self.ppu.current_cycle.is_odd_frame;
-            if self.is_short_frame() {
+            if self.ppu.current_cycle.is_odd_frame
+                && self.should_render_sprites()
+                && self.should_render_background()
+            {
                 self.ppu.current_cycle.tick += 1;
             }
         } else if self.ppu.current_cycle.tick == CycleStatus::MAX_TICKS {

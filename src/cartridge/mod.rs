@@ -2,6 +2,11 @@ pub mod ines;
 pub mod mapper0;
 mod mapper2;
 
+const PRG_PAGE_SIZE: usize = 0x4000;
+const CHR_PAGE_SIZE: usize = 0x2000;
+const PRG_RAM_SIZE: usize = 0x2000;
+const TRAINER_SIZE: usize = 0x200;
+
 /// The mapper visible to the CPU
 /// `get` and `set` should take addresses in the range of 0x4020 - 0xFFFF
 pub trait CPUMapper {
