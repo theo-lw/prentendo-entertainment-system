@@ -59,8 +59,11 @@ pub fn cycle<'a, T: PPU>(
                 sprite_generator = evaluate_sprites(ppu);
             }
 
-            if should_run_background(scanline, tick) && background_enabled {
+            if should_run_background(scanline, tick) {
                 pipeline.advance_background();
+            }
+
+            if should_run_background(scanline, tick) && background_enabled {
                 match Pin::new(&mut background_generator).resume(()) {
                     GeneratorState::Complete(tile) => {
                         pipeline.load_background_tile(tile);
@@ -71,8 +74,11 @@ pub fn cycle<'a, T: PPU>(
                 }
             }
 
-            if should_run_sprites(scanline, tick) && (background_enabled || sprites_enabled) {
+            if should_run_sprites(scanline, tick) {
                 pipeline.advance_sprites();
+            }
+
+            if should_run_sprites(scanline, tick) && (background_enabled || sprites_enabled) {
                 match Pin::new(&mut sprite_generator).resume(()) {
                     GeneratorState::Complete(sprites) => {
                         pipeline.load_sprites(sprites);
@@ -127,14 +133,11 @@ fn should_run_sprites(scanline: usize, tick: usize) -> bool {
 }
 
 fn should_reload_sprites(scanline: usize, tick: usize) -> bool {
-    (0..=239).contains(&scanline) && tick == 1
+    should_run_sprites(scanline, tick) && tick == 1
 }
 
 fn should_reload_background(scanline: usize, tick: usize) -> bool {
-    ((1..=256).contains(&tick) || (321..=336).contains(&tick))
-        && on_render_line(scanline)
-        && tick != 0
-        && tick % 8 == 1
+    should_run_background(scanline, tick) && tick % 8 == 1
 }
 
 fn should_increment_y(scanline: usize, tick: usize) -> bool {

@@ -48,7 +48,7 @@ impl Pipeline {
 
         let first_active_sprite: Option<&Sprite> = self.sprites.as_ref().and_then(|vec| {
             for sprite in vec {
-                if sprite.is_active() {
+                if sprite.is_active() && !sprite.is_transparent() {
                     return Some(sprite);
                 }
             }
@@ -74,7 +74,7 @@ impl Pipeline {
             (Some(a), Some(b), Some(true)) => {
                 first_active_sprite.map(|x| (x.get_current_pixel_palette_addr(), a != 0 && !b))
             }
-            _ => None,
+            _ => Some((PALETTE_BACKGROUND_BASE, false)),
         }
     }
 
