@@ -8,6 +8,7 @@ use pretendo_entertainment_system::state::io::Controller;
 use pretendo_entertainment_system::state::ppu::Cycle;
 use pretendo_entertainment_system::state::NES;
 use sdl2;
+use sdl2::audio::AudioSpecDesired;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::pixels::PixelFormatEnum;
@@ -46,7 +47,7 @@ fn main() -> Result<(), ROMError> {
     let mut cpu_generator = cpu::cycle(&nes);
     let mut ppu_generator = ppu::cycle(&nes);
 
-    // Set up SDL
+    // Initialize an SDL window and texture
     let sdl_context = sdl2::init().unwrap();
     let video_subsystem = sdl_context.video().unwrap();
     let window = video_subsystem
@@ -58,7 +59,6 @@ fn main() -> Result<(), ROMError> {
         .position_centered()
         .build()
         .unwrap();
-    let mut event_pump = sdl_context.event_pump().unwrap();
     let mut canvas: WindowCanvas = window.into_canvas().present_vsync().build().unwrap();
     let texture_creator: TextureCreator<_> = canvas.texture_creator();
     let mut texture: Texture = texture_creator
@@ -69,12 +69,28 @@ fn main() -> Result<(), ROMError> {
         )
         .expect("Could not create texture!");
 
-    // Initialize som ehelper variables
+    // Initialize an SDL event pump
+    let mut event_pump = sdl_context.event_pump().unwrap();
+
+    // Initialize the SDL audio system
+    let audio_subsystem = sdl_context.audio().unwrap();
+    let desired_spec = AudioSpecDesired {
+        freq: Some(44100),
+        channels: Some(1),
+        samples: Some(1024),
+    };
+    let audio_queue = audio_subsystem
+        .open_queue::<f32, _>(None, &desired_spec)
+        .unwrap();
+
+    // Initialize some helper variables
     let sleep_duration = Duration::new(0, 1_000_000_000u32 / 60);
     let mut old_frame = false;
 
     'running: loop {
         let start = Instant::now();
+
+        // wait for quit
         for event in event_pump.poll_iter() {
             match event {
                 Event::Quit { .. }
@@ -86,6 +102,7 @@ fn main() -> Result<(), ROMError> {
             }
         }
 
+        // run the CPU and the PPU
         while old_frame || nes.borrow().get_scanline() < POST_RENDER_LINE {
             nes.borrow_mut()
                 .update_controller(event_pump.keyboard_state());
@@ -102,6 +119,11 @@ fn main() -> Result<(), ROMError> {
         }
         old_frame = true;
 
+        // Start playback
+        audio_queue.queue(&[0.4; 128]);
+        audio_queue.resume();
+
+        // update the display
         texture
             .update(
                 None,
@@ -114,6 +136,8 @@ fn main() -> Result<(), ROMError> {
             .copy(&texture, None, None)
             .expect("Could not copy texture!");
         canvas.present();
+
+        // sleep for the remaining time
         let end = Instant::now();
         if end - start < sleep_duration {
             ::std::thread::sleep(sleep_duration - (end - start));

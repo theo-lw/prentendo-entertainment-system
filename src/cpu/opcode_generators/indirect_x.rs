@@ -166,7 +166,7 @@ mod tests {
         cpu.set_mem(0x0F26, 0b0100_0101);
         let cpu = RefCell::new(cpu);
         let instruction = ASL;
-        let mut opcode = modify(&cpu, instruction);
+        let mut opcode = _modify(&cpu, instruction);
         let mut cycle = CPUCycle {
             instruction: instruction.name(),
             mode: AddressingMode::IndirectX,
