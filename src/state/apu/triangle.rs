@@ -13,7 +13,7 @@ const TRIANGLE_SEQUENCE: [u8; TRIANGLE_SEQUENCE_LENGTH] = [
 pub struct Triangle {
     sequence_index: usize,
     timer: Timer,
-    length_counter: LengthCounter,
+    pub length_counter: LengthCounter,
     linear_control: bool,
     linear_counter: u8,
     linear_reload_val: u8,

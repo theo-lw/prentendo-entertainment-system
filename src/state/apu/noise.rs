@@ -11,7 +11,7 @@ const NOISE_RATE: [u16; 0x10] = [
 pub struct Noise {
     envelope: Envelope,
     timer: Timer,
-    length_counter: LengthCounter,
+    pub length_counter: LengthCounter,
     shift_register: u16,
     mode: bool,
 }

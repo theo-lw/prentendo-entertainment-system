@@ -17,7 +17,7 @@ const SWEEP_MAX: u16 = 0x7FF;
 pub struct Pulse {
     duty: [u8; DUTY_LENGTH],
     duty_index: usize,
-    length_counter: LengthCounter,
+    pub length_counter: LengthCounter,
     envelope: Envelope,
     timer: Timer,
     negation: Negation,

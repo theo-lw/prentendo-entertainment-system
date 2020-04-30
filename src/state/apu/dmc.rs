@@ -9,7 +9,7 @@ const DMC_RATE: [u16; 0x10] = [
 pub struct DMC {
     timer: Timer,
     irq_enable: bool,
-    irq_pending: bool,
+    pub irq_pending: bool,
     loop_flag: bool,
     shift_register: u8,
     bits_remaining: usize,
@@ -17,8 +17,10 @@ pub struct DMC {
     silent: bool,
     sample_buffer: u8,
     sample_empty: bool,
-    sample_addr: u16,
-    sample_length: u16,
+    pub sample_addr: u16,
+    pub cur_addr: u16,
+    pub sample_length: u16,
+    pub cur_length: u16,
 }
 
 impl DMC {
