@@ -1,16 +1,27 @@
 # Pretendo Entertainment System
 
-A NES emulator written in Rust. Currently under construction. The goals of this emulator are accuracy and readability. Consequently, it is not the fastest emulator, although it does run at a healthy 60 FPS on my base model 2015 Macbook Air.
+A NES emulator written in Rust. The goals of this emulator are accuracy and readability. Consequently, it is not the fastest emulator, although it does run at a healthy 60 FPS on my base model 2015 Macbook Air.
 
-Todo:
+## Demos
+
+![Super Mario Bros.](https://gyazo.com/03d0ff27a57cd58624a9ddaf848e0b33)
+![Contra](https://gyazo.com/c9ec77a1fa0715351d7e5512939a4748)
+![Donkey Kong](https://gyazo.com/7776e4cd783c69e54f49de8d156ae795)
+![Mega Man](https://gyazo.com/71d01fcddde4a8a4244dde9556e82ed8)
+
+
+## Todo
 - Second controller support
-- APU emulation
-- NES 2.0 file formats
-- Additional mappers (currently, only Mappers 0 and 2 are supported)
+- Customizable keyboard mappings
+- Debug mode
+- Save states
+- NES 2.0 file formats (only INES file formats are supported)
+- Additional mappers (only Mappers 0 and 2 are supported)
+- Miscellaneous APU and PPU bugfixes.
 
 ## Requirements
 
-- SDL2: graphics, keyboard I/O
+- SDL2: graphics, sound, keyboard I/O
 - Nightly Rust: this emulator makes heavy use of generators, which is currently only available on the nightly toolchain.
 
 ## Usage
