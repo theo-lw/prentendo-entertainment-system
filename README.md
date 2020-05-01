@@ -8,7 +8,7 @@ A NES emulator written in Rust. The goals of this emulator are accuracy and read
 
 [![Donkey Kong](https://i.gyazo.com/7776e4cd783c69e54f49de8d156ae795.gif)](https://gyazo.com/7776e4cd783c69e54f49de8d156ae795)
 
-[![Image from Gyazo](https://i.gyazo.com/c9ec77a1fa0715351d7e5512939a4748.gif)](https://gyazo.com/c9ec77a1fa0715351d7e5512939a4748)
+[![Contra](https://i.gyazo.com/51a6abe2cc313fde4540dfc227ba204a.gif)](https://gyazo.com/51a6abe2cc313fde4540dfc227ba204a)
 
 [![Mega Man](https://i.gyazo.com/71d01fcddde4a8a4244dde9556e82ed8.gif)](https://gyazo.com/71d01fcddde4a8a4244dde9556e82ed8)
 
