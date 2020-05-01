@@ -1,6 +1,6 @@
 # Pretendo Entertainment System
 
-A NES emulator written in Rust. The goals of this emulator are accuracy and readability. Consequently, it is not the fastest emulator, although it does run at a healthy 60 FPS on my base model 2015 Macbook Air.
+A NES (Nintendo Entertainment System) emulator written in Rust. The goals of this emulator are accuracy and readability. Consequently, it is not the fastest emulator, although it does run at a healthy 60 FPS on my base model 2015 Macbook Air.
 
 ## Demos
 
@@ -14,15 +14,6 @@ Please don't sue me Nintendo :(
 
 [![Mega Man](https://i.gyazo.com/71d01fcddde4a8a4244dde9556e82ed8.gif)](https://gyazo.com/71d01fcddde4a8a4244dde9556e82ed8)
 
-## Todo
-- Second controller support
-- Customizable keyboard mappings
-- Debug mode
-- Save states
-- NES 2.0 file formats (only INES file formats are supported)
-- Additional mappers (only Mappers 0 and 2 are supported)
-- Miscellaneous APU and PPU bugfixes.
-
 ## Requirements
 
 - SDL2: graphics, sound, keyboard I/O
@@ -33,6 +24,27 @@ Please don't sue me Nintendo :(
 ```
 cargo run --release <rom>
 ```
+
+```
+Keyboard Map
+
+Enter - Start
+Space - Select
+Up    - Up
+Down  - Down
+Left  - Left
+Z     - A
+X     - B
+```
+
+## Todo
+- Second controller support
+- Customizable keyboard mappings
+- Debug views
+- Save states
+- NES 2.0 file formats (only INES file formats are supported)
+- Additional mappers (only Mappers 0 and 2 are supported)
+- Miscellaneous APU and PPU bugfixes.
 
 ## FAQ
 
