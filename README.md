@@ -1,6 +1,6 @@
 # Pretendo Entertainment System
 
-A NES (Nintendo Entertainment System) emulator written in Rust. The goals of this emulator are accuracy and readability. Consequently, it is not the fastest emulator, although it does run at a healthy 60 FPS on my base model 2015 Macbook Air.
+A NES (Nintendo Entertainment System) emulator written in Rust. It includes a cycle-accurate CPU, a somewhat accurate PPU and a less accurate APU. Because this emulator strives for accuracy, it is not the fastest emulator, although it does run at a healthy 60 FPS on my base model 2015 Macbook Air.
 
 ## Demos
 
