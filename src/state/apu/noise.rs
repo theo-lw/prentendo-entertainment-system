@@ -9,7 +9,7 @@ const NOISE_RATE: [u16; 0x10] = [
 
 #[derive(Default)]
 pub struct Noise {
-    envelope: Envelope,
+    pub envelope: Envelope,
     timer: Timer,
     pub length_counter: LengthCounter,
     shift_register: u16,
@@ -47,7 +47,7 @@ impl Noise {
     }
 
     pub fn set_flags(&mut self, val: u8) {
-        self.length_counter.set_halted(val.is_bit_set(5));
+        self.length_counter.set_enabled(val.is_bit_set(5));
         self.envelope.set_constant_volume(val.is_bit_set(4));
         self.envelope.set_divider(val & 0b1111);
     }

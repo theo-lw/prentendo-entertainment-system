@@ -57,7 +57,7 @@ pub fn irq<'a, S: Memory + Stack + Registers>(
         cpu.borrow_mut().set_pcl(interrupt_low);
         cpu.borrow_mut().assign_flag(Flag::I, true);
         yield;
-        let interrupt_high: u8 = cpu.borrow().get_mem(IRQ_VECTOR);
+        let interrupt_high: u8 = cpu.borrow().get_mem(IRQ_VECTOR + 1);
         cpu.borrow_mut().set_pch(interrupt_high);
         yield;
     }

@@ -71,7 +71,7 @@ impl Memory for NES {
             }
             0x4015 => self.apu.set_status(val),
             0x4016 => self.io.write(val),
-            0x4017 => self.apu.frame_counter.set(val),
+            0x4017 => self.apu.set_frame_counter(val),
             0x4018..=0x401F => {} // this functionality is normally disabled
             0x4020..=0xFFFF => self.cartridge.as_cpu_mapper_mut().set(addr, val),
         }

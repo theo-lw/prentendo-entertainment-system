@@ -58,7 +58,7 @@ impl Triangle {
 
     pub fn set_linear(&mut self, val: u8) {
         self.linear_control = val.is_bit_set(7);
-        self.length_counter.set_halted(val.is_bit_set(7));
+        self.length_counter.set_enabled(!val.is_bit_set(7));
         self.linear_reload_val = val & 0b111_1111;
     }
 

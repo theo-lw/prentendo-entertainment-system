@@ -3,7 +3,8 @@ use std::cell::Cell;
 
 pub struct FrameCounter {
     cpu_cycle: u32,
-    pub irq_pending: Cell<bool>,
+    irq_pending: Cell<bool>,
+    pub irq_triggered: bool,
     irq_inhibit: bool,
     mode: FrameCounterMode,
 }
@@ -13,7 +14,8 @@ impl FrameCounter {
         FrameCounter {
             cpu_cycle: 0,
             irq_pending: Cell::new(false),
-            irq_inhibit: false,
+            irq_triggered: false,
+            irq_inhibit: true,
             mode: FrameCounterMode::FourStep,
         }
     }
@@ -34,6 +36,20 @@ impl FrameCounter {
         self.cpu_cycle == 14913 || self.is_last_cycle()
     }
 
+    pub fn is_even_cycle(&self) -> bool {
+        (self.cpu_cycle % 2) == 0
+    }
+
+    pub fn is_output_cycle(&self) -> bool {
+        (self.cpu_cycle % 40) == 0
+    }
+
+    pub fn get_irq_pending(&self) -> bool {
+        let result = self.irq_pending.get();
+        self.irq_pending.set(false);
+        result
+    }
+
     pub fn clock_cpu_cycle(&mut self) {
         if !self.is_last_cycle() {
             self.cpu_cycle += 1;
@@ -41,6 +57,7 @@ impl FrameCounter {
         }
         if self.mode == FrameCounterMode::FourStep && !self.irq_inhibit {
             self.irq_pending.set(true);
+            self.irq_triggered = true;
         }
         self.cpu_cycle = 0;
     }

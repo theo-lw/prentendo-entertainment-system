@@ -18,7 +18,7 @@ pub struct Pulse {
     duty: [u8; DUTY_LENGTH],
     duty_index: usize,
     pub length_counter: LengthCounter,
-    envelope: Envelope,
+    pub envelope: Envelope,
     timer: Timer,
     negation: Negation,
     sweep_enable: bool,
@@ -91,7 +91,7 @@ impl Pulse {
 
     pub fn set_flags(&mut self, val: u8) {
         self.duty = DUTY_SEQUENCES[usize::from(val & 0b1100_0000) >> 6];
-        self.length_counter.set_halted(val.is_bit_set(5));
+        self.length_counter.set_enabled(!val.is_bit_set(5));
         self.envelope.set_constant_volume(val.is_bit_set(4));
         self.envelope.set_divider(val & 0b1111);
     }

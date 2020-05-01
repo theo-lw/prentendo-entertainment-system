@@ -10,6 +10,7 @@ pub struct DMC {
     timer: Timer,
     irq_enable: bool,
     pub irq_pending: bool,
+    pub irq_triggered: bool,
     loop_flag: bool,
     shift_register: u8,
     bits_remaining: usize,
@@ -54,6 +55,24 @@ impl DMC {
 
     pub fn get_volume(&self) -> u8 {
         self.output_level
+    }
+
+    pub fn is_dma_active(&self) -> bool {
+        self.cur_length > 0 && self.sample_empty
+    }
+
+    pub fn load_buffer(&mut self, val: u8) {
+        self.sample_buffer = val;
+        self.sample_empty = false;
+        self.cur_addr = (self.cur_addr + 1) | 0x8000;
+        self.cur_length -= 1;
+        if self.cur_length == 0 && self.loop_flag {
+            self.cur_length = self.sample_length;
+            self.cur_addr = self.sample_addr;
+        } else if self.cur_length == 0 && self.irq_enable {
+            self.irq_pending = true;
+            self.irq_triggered = true;
+        }
     }
 
     pub fn set_flags(&mut self, val: u8) {

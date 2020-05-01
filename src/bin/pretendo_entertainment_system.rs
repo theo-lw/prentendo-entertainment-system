@@ -4,6 +4,7 @@ use pretendo_entertainment_system::cartridge::Mapper;
 use pretendo_entertainment_system::cpu;
 use pretendo_entertainment_system::ppu;
 use pretendo_entertainment_system::ppu::display::Display;
+use pretendo_entertainment_system::state::apu::APU;
 use pretendo_entertainment_system::state::io::Controller;
 use pretendo_entertainment_system::state::ppu::Cycle;
 use pretendo_entertainment_system::state::NES;
@@ -113,6 +114,7 @@ fn main() -> Result<(), ROMError> {
                     _ => {}
                 }
             }
+            nes.borrow_mut().apu_cycle();
             if nes.borrow().get_scanline() == START_RENDER_LINE {
                 old_frame = false;
             }
@@ -120,8 +122,9 @@ fn main() -> Result<(), ROMError> {
         old_frame = true;
 
         // Start playback
-        audio_queue.queue(&[0.4; 128]);
+        audio_queue.queue(nes.borrow().get_apu_buffer());
         audio_queue.resume();
+        nes.borrow_mut().clear_apu_buffer();
 
         // update the display
         texture

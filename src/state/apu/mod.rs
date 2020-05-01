@@ -17,7 +17,8 @@ use triangle::Triangle;
 
 pub trait APU<'a> {
     fn apu_cycle(&mut self);
-    fn get_buffer(&'a self) -> &'a [f32];
+    fn get_apu_buffer(&'a self) -> &'a [f32];
+    fn clear_apu_buffer(&mut self);
 }
 
 /// Represents the APU's internal state
@@ -57,30 +58,46 @@ impl APUState {
             self.dmc.cur_addr = self.dmc.sample_addr;
         }
         self.dmc.irq_pending = false;
-        if !val.is_bit_set(3) {
-            self.noise.length_counter.set_length(0);
-        }
-        if !val.is_bit_set(2) {
-            self.triangle.length_counter.set_length(0);
-        }
-        if !val.is_bit_set(1) {
-            self.pulse2.length_counter.set_length(0);
-        }
-        if !val.is_bit_set(0) {
-            self.pulse1.length_counter.set_length(0);
-        }
+
+        self.noise.length_counter.silent(val.is_bit_set(3));
+        self.triangle.length_counter.silent(val.is_bit_set(2));
+        self.pulse2.length_counter.silent(val.is_bit_set(1));
+        self.pulse1.length_counter.silent(val.is_bit_set(0));
     }
 
     pub fn get_status(&self) -> u8 {
-        self.frame_counter.irq_pending.set(false);
         let mut result = 0;
         result.assign_bit(7, self.dmc.irq_pending);
-        result.assign_bit(6, self.frame_counter.irq_pending.get());
+        result.assign_bit(6, self.frame_counter.get_irq_pending());
         result.assign_bit(4, self.dmc.cur_length > 0);
         result.assign_bit(3, !self.noise.length_counter.is_zero());
         result.assign_bit(2, !self.triangle.length_counter.is_zero());
         result.assign_bit(1, !self.pulse2.length_counter.is_zero());
         result.assign_bit(0, !self.pulse1.length_counter.is_zero());
         result
+    }
+
+    pub fn set_frame_counter(&mut self, val: u8) {
+        self.frame_counter.set(val);
+        if val.is_bit_set(7) {
+            self.quarter_frame();
+            self.half_frame();
+        }
+    }
+
+    pub fn quarter_frame(&mut self) {
+        self.pulse1.envelope.clock();
+        self.pulse2.envelope.clock();
+        self.triangle.decrement_linear();
+        self.noise.envelope.clock();
+    }
+
+    pub fn half_frame(&mut self) {
+        self.pulse1.sweep();
+        self.pulse1.length_counter.decrement();
+        self.pulse2.sweep();
+        self.pulse2.length_counter.decrement();
+        self.triangle.length_counter.decrement();
+        self.noise.length_counter.decrement();
     }
 }

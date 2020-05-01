@@ -6,7 +6,6 @@ const LENGTH_TABLE: [u8; 0x20] = [
 #[derive(Default, Debug)]
 pub struct LengthCounter {
     val: u8,
-    halted: bool,
     enabled: bool,
 }
 
@@ -21,11 +20,11 @@ impl LengthCounter {
         }
     }
 
-    pub fn set_halted(&mut self, val: bool) {
-        self.halted = val;
+    pub fn set_enabled(&mut self, val: bool) {
+        self.enabled = val;
     }
 
-    pub fn set_enabled(&mut self, val: bool) {
+    pub fn silent(&mut self, val: bool) {
         self.enabled = val;
         if !self.enabled {
             self.val = 0;
@@ -37,7 +36,7 @@ impl LengthCounter {
     }
 
     pub fn decrement(&mut self) {
-        if !self.is_zero() && self.halted {
+        if !self.is_zero() && self.enabled {
             self.val -= 1;
         }
     }
