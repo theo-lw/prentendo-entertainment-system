@@ -4,6 +4,8 @@ A NES emulator written in Rust. The goals of this emulator are accuracy and read
 
 ## Demos
 
+Please don't sue me Nintendo :(
+
 [![Super Mario Bros.](https://i.gyazo.com/03d0ff27a57cd58624a9ddaf848e0b33.gif)](https://gyazo.com/03d0ff27a57cd58624a9ddaf848e0b33)
 
 [![Donkey Kong](https://i.gyazo.com/7776e4cd783c69e54f49de8d156ae795.gif)](https://gyazo.com/7776e4cd783c69e54f49de8d156ae795)
